@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="RUBY_MODULE" version="4">
+  <component name="ModuleRunConfigurationManager">
+    <shared />
+  </component>
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/features" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="CFPropertyList (v3.0.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="activesupport (v4.2.11.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="ast (v2.2.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="atomos (v0.1.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="bacon (v1.2.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="claide (v1.0.2, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods (v1.7.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-core (v1.7.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-deintegrate (v1.0.4, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-downloader (v1.2.2, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-plugins (v1.0.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-search (v1.0.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-stats (v1.1.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-trunk (v1.3.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="cocoapods-try (v1.1.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="colored2 (v3.1.2, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.1.5, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="coveralls (v0.8.21, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="docile (v1.1.5, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="escape (v0.0.4, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="fourflusher (v2.3.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="fuzzy_match (v2.0.4, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="gh_inspector (v1.1.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="i18n (v0.9.5, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="json (v2.1.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="metaclass (v0.0.4, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="minitest (v5.11.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="mocha (v1.2.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="mocha-on-bacon (v0.2.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="molinillo (v0.6.6, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="nanaimo (v0.2.6, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="nap (v1.1.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="netrc (v0.11.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="parser (v2.3.0.6, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="powerpack (v0.1.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="prettybacon (v0.0.2, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rainbow (v2.1.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rake (v10.5.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rubocop (v0.37.2, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="ruby-macho (v1.4.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="ruby-progressbar (v1.7.5, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="simplecov (v0.14.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="simplecov-html (v0.10.2, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="term-ansicolor (v1.6.0, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="thor (v0.19.4, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="thread_safe (v0.3.6, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="tins (v1.16.3, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="tzinfo (v1.2.5, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="unicode-display_width (v0.3.1, ruby-2.6.10-p210) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="xcodeproj (v1.10.0, ruby-2.6.10-p210) [gem]" level="application" />
+  </component>
+  <component name="RakeTasksCache-v2">
+    <option name="myRootTask">
+      <RakeTaskImpl id="rake">
+        <subtasks>
+          <RakeTaskImpl description="Build cocoapods-packager-1.5.0.gem into the pkg directory" fullCommand="build" id="build" />
+          <RakeTaskImpl description="Remove any temporary products" fullCommand="clean" id="clean" />
+          <RakeTaskImpl description="Remove any generated files" fullCommand="clobber" id="clobber" />
+          <RakeTaskImpl description="Build and install cocoapods-packager-1.5.0.gem into system gems" fullCommand="install" id="install" />
+          <RakeTaskImpl id="install">
+            <subtasks>
+              <RakeTaskImpl description="Build and install cocoapods-packager-1.5.0.gem into system gems without network access" fullCommand="install:local" id="local" />
+            </subtasks>
+          </RakeTaskImpl>
+          <RakeTaskImpl description="Create tag v1.5.0 and build and push cocoapods-packager-1.5.0.gem to rubygems.org" fullCommand="release[remote]" id="release[remote]" />
+          <RakeTaskImpl id="spec">
+            <subtasks>
+              <RakeTaskImpl description="Runs all the specs" fullCommand="spec:all" id="all" />
+              <RakeTaskImpl description="Runs the command specs" fullCommand="spec:command" id="command" />
+              <RakeTaskImpl description="Runs the integration specs" fullCommand="spec:integration" id="integration" />
+              <RakeTaskImpl description="Runs the unit specs" fullCommand="spec:unit" id="unit" />
+            </subtasks>
+          </RakeTaskImpl>
+          <RakeTaskImpl description="" fullCommand="default" id="default" />
+          <RakeTaskImpl description="" fullCommand="release" id="release" />
+          <RakeTaskImpl id="release">
+            <subtasks>
+              <RakeTaskImpl description="" fullCommand="release:guard_clean" id="guard_clean" />
+              <RakeTaskImpl description="" fullCommand="release:rubygem_push" id="rubygem_push" />
+              <RakeTaskImpl description="" fullCommand="release:source_control_push" id="source_control_push" />
+            </subtasks>
+          </RakeTaskImpl>
+        </subtasks>
+      </RakeTaskImpl>
+    </option>
+  </component>
+</module>
