@@ -38,8 +38,9 @@ module Pod
         static_installer
       end
 
-      def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources)
+      def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources, use_modular_headers = true)
         options = {}
+        options[:modular_headers] = true
         if path
           if @local
             options[:path] = path
@@ -47,11 +48,14 @@ module Pod
             options[:podspec] = path
           end
         end
+        puts "生成podfile文件........"
         options[:subspecs] = subspecs if subspecs
         Pod::Podfile.new do
           sources.each { |s| source s }
           platform(platform_name, deployment_target)
+          use_modular_headers! if use_modular_headers
           pod(spec_name, options)
+
 
           install!('cocoapods',
                    :integrate_targets => false,
