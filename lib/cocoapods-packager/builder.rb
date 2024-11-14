@@ -172,6 +172,7 @@ module Pod
       FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Private/#{@spec.name}")
 
       # Equivalent to removing derrived data
+      puts "----------删除目录"
       FileUtils.rm_rf('Pods/build')
     end
 
@@ -304,7 +305,7 @@ MAP
     end
 
     def ios_architectures
-      archs = %w(x86_64 i386 arm64)
+      archs = %w(arm64)
       vendored_libraries.each do |library|
         archs = `lipo -info #{library}`.split & archs
       end
