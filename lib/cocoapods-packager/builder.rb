@@ -300,11 +300,11 @@ MAP
     end
 
     def ios_build_options
-      "ARCHS=\'$(ARCHS_STANDARD)\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
+      "ARCHS=\'#{ios_architectures.join(' ')}\' OTHER_CFLAGS=\'-fembed-bitcode -Qunused-arguments\'"
     end
 
     def ios_architectures
-      archs = %w(x86_64 i386 arm64 armv7 armv7s)
+      archs = %w(x86_64 i386 arm64)
       vendored_libraries.each do |library|
         archs = `lipo -info #{library}`.split & archs
       end
