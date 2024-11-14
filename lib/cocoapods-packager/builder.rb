@@ -305,7 +305,7 @@ MAP
     end
 
     def ios_architectures
-      archs = %w(arm64)
+      archs = %w(x86_64 i386 arm64)
       vendored_libraries.each do |library|
         archs = `lipo -info #{library}`.split & archs
       end
@@ -316,13 +316,13 @@ MAP
       if defined?(Pod::DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
-
-      command = "xcodebuild #{defines} #{args} CONFIGURATION_BUILD_DIR=#{build_dir} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      command = "xcodebuild #{defines} #{args} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
         puts UI::BuildFailedReport.report(command, output)
 
+        UI.puts "\n----- #{$?.exitstatus}"
         # Note: We use `Process.exit` here because it fires a `SystemExit`
         # exception, which gives the caller a chance to clean up before the
         # process terminates.
@@ -330,6 +330,15 @@ MAP
         # See http://ruby-doc.org/core-1.9.3/Process.html#method-c-exit
         Process.exit
       end
+
+      system_build_dir = File.join(@static_sandbox_root,"..", "/build/Release-iphoneos")
+      if build_dir == "build-sim"
+        system_build_dir = File.join(@static_sandbox_root,"..", "/build/Release-iphonesimulator")
+      end
+      result_dir = "#{@static_sandbox_root}/#{build_dir}"
+      `cp -rp #{system_build_dir}/#{@spec.name}/ #{result_dir} 2>&1`
+      `cp -rp #{system_build_dir}/**/*.a #{result_dir} 2>&1`
+      `cp -rp #{system_build_dir}/**/*.bundle #{result_dir} 2>&1`
     end
   end
 end
