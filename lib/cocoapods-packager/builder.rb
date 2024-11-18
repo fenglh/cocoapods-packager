@@ -216,33 +216,76 @@ module Pod
     end
 
     def copy_headers
+      puts "开始拷贝头文件"
       headers_source_root = "#{@public_headers_root}/#{@spec.name}"
+      puts "遍历目录及子目录：#{headers_source_root}下所有的.h文件"
 
-      Dir.glob("#{headers_source_root}/**/*.h").
-        each { |h| `ditto #{h} #{@fwk.headers_path}/#{h.sub(headers_source_root, '')}` }
+      # 拷贝头文件
+      copy_header_files(headers_source_root)
 
-      # If custom 'module_map' is specified add it to the framework distribution
-      # otherwise check if a header exists that is equal to 'spec.name', if so
-      # create a default 'module_map' one using it.
-      if !@spec.module_map.nil?
-        module_map_file = @file_accessors.flat_map(&:module_map).first
-        module_map = File.read(module_map_file) if Pathname(module_map_file).exist?
-      elsif File.exist?("#{@public_headers_root}/#{@spec.name}/#{@spec.name}.h")
-        module_map = <<MAP
-framework module #{@spec.name} {
-  umbrella header "#{@spec.name}.h"
-
-  export *
-  module * { export * }
-}
-MAP
-      end
-
-      unless module_map.nil?
-        @fwk.module_map_path.mkpath unless @fwk.module_map_path.exist?
-        File.write("#{@fwk.module_map_path}/module.modulemap", module_map)
+      # 处理 module_map 生成
+      module_map = generate_module_map
+      if module_map
+        # 如果有 module_map 生成则写入文件
+        write_module_map(module_map)
       end
     end
+
+    # 拷贝所有头文件
+    def copy_header_files(headers_source_root)
+      Dir.glob("#{headers_source_root}/**/*.h").each do |h|
+        puts "遍历到.h文件: #{h}"
+        # 使用 ditto 命令复制文件
+        destination = "#{@fwk.headers_path}/#{h.sub(headers_source_root, '')}"
+        cmd = "ditto #{h} #{destination}"
+        puts "执行ditto命令: #{cmd}"
+        system(cmd)
+      end
+    end
+
+    # 根据条件生成 module_map
+    def generate_module_map
+      # 如果指定了 module_map，直接读取它
+      if @spec.module_map
+        module_map_file = @file_accessors.flat_map(&:module_map).first
+        puts "#{@spec.name} spec 指定module_map：#{module_map_file}"
+        return File.read(module_map_file) if Pathname(module_map_file).exist?
+
+        # 如果没有指定，且有头文件，则生成默认的 module_map
+      elsif header_file = find_header_file
+        puts "#{@spec.name} spec 没指定module_map，创建默认的module_map：#{header_file}"
+        return generate_default_module_map(header_file)
+      end
+
+      nil # 如果没有匹配条件，返回 nil
+    end
+
+    # 查找头文件，支持 .h 和 -umbrella.h 后缀
+    def find_header_file
+      ["#{@spec.name}.h", "#{@spec.name}-umbrella.h"].find do |file|
+        File.exist?("#{@public_headers_root}/#{@spec.name}/#{file}")
+      end
+    end
+
+    # 生成默认的 module_map
+    def generate_default_module_map(header_file)
+      <<~MAP
+  framework module #{@spec.name} {
+    umbrella header "#{header_file}"
+
+    export *
+    module * { export * }
+  }
+  MAP
+    end
+
+    # 写入生成的 module_map 文件
+    def write_module_map(module_map)
+      @fwk.module_map_path.mkpath unless @fwk.module_map_path.exist?
+      File.write("#{@fwk.module_map_path}/module.modulemap", module_map)
+      puts "#{@spec.name} spec 生成 #{@fwk.module_map_path}/module.modulemap"
+    end
+
 
     def copy_license
       license_file = @spec.license[:file] || 'LICENSE'
