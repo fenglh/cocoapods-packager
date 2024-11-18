@@ -48,19 +48,28 @@ module Pod
     end
 
     def build_static_framework
-      UI.puts("Building static framework #{@spec} with configuration #{@config}")
 
+      puts "开始编#{@config} 模式的Arm64静态framework #{@spec} "
       defines = compile
+      puts "完成编#{@config} 模式的Arm64静态framework #{@spec} "
+
+      puts "开始编#{@config} 模式的X86_64静态framework #{@spec} "
       build_sim_libraries(defines)
+      puts "完成编#{@config} 模式的X86_64静态framework #{@spec} "
 
       create_framework
       output = @fwk.versions_path + Pathname.new(@spec.name)
 
+      puts "创建framework文件夹：#{output}"
+
       if @platform.name == :ios
+        puts "开始合并X86_64、Arm64静态库 #{@spec} "
         build_static_library_for_ios(output)
       else
         build_static_library_for_mac(output)
       end
+
+      puts "构建完成! 开始拷贝数据:"
 
       copy_headers
       copy_license
@@ -134,6 +143,7 @@ module Pod
       `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{@platform.name}`
     end
 
+    # 构建模拟器库
     def build_sim_libraries(defines)
       if @platform.name == :ios
         xcodebuild(defines, '-sdk iphonesimulator', 'build-sim')
@@ -142,13 +152,20 @@ module Pod
 
     def build_static_library_for_ios(output)
       static_libs = static_libs_in_sandbox('build') + static_libs_in_sandbox('build-sim') + vendored_libraries
+      puts "静态库目录:#{static_libs.join(' ')}"
       libs = ios_architectures.map do |arch|
+        puts "--arch: #{arch}"
         library = "#{@static_sandbox_root}/build/package-#{arch}.a"
-        `libtool -arch_only #{arch} -static -o #{library} #{static_libs.join(' ')}`
+        cmd = "libtool -arch_only #{arch} -static -o #{library} #{static_libs.join(' ')}"
+        puts "执行libtool命令:#{cmd}"
+        `#{cmd}`
+        puts "生成静态库:#{library}"
         library
       end
 
-      `lipo -create -output #{output} #{libs.join(' ')}`
+      cmd = "lipo -create -output #{output} #{libs.join(' ')}"
+      puts "执行lipo命令:#{cmd}"
+      `#{cmd}`
     end
 
     def build_static_library_for_mac(output)
@@ -172,11 +189,13 @@ module Pod
       FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Private/#{@spec.name}")
 
       # Equivalent to removing derrived data
-      puts "----------删除目录"
       FileUtils.rm_rf('Pods/build')
     end
 
     def compile
+
+      puts "compile cur_dir: #{Dir.pwd}"
+
       defines = "GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_#{@spec.name}=PodsDummy_PodPackage_#{@spec.name}'"
       defines << ' ' << @spec.consumer(@platform).compiler_flags.join(' ')
 
@@ -184,6 +203,9 @@ module Pod
         options = ios_build_options
       end
 
+      # codebuild GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_YLActivation=PodsDummy_PodPackage_YLActivation'  ARCHS='arm64' OTHER_CFLAGS='-fembed-bitcode -Qunused-arguments' clean build -configuration Release -target Pods-packager -project Pods/Pods.xcodeproj
+      # defines: 是指"GCC_PREPROCESSOR_DEFINITIONS='$(inherited) PodsDummy_Pods_YLActivation=PodsDummy_PodPackage_YLActivation'" 这段宏
+      # options: 是指“ARCHS='arm64' OTHER_CFLAGS='-fembed-bitcode -Qunused-arguments'” 这段参数
       xcodebuild(defines, options)
 
       if @mangle
@@ -305,8 +327,7 @@ MAP
     end
 
     def ios_architectures
-      # 仅支持arm64，否则会打framework失败
-      archs = %w(arm64)
+      archs = %w(x86_64 arm64)
       vendored_libraries.each do |library|
         archs = `lipo -info #{library}`.split & archs
       end
@@ -317,7 +338,9 @@ MAP
       if defined?(Pod::DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
       end
-      command = "xcodebuild #{defines} #{args} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj 2>&1"
+      command = "xcodebuild #{defines} #{args} clean build -configuration #{config} -target #{target} -project #{project_root}/Pods.xcodeproj"
+
+      puts "执行命名: #{command}"
       output = `#{command}`.lines.to_a
 
       if $?.exitstatus != 0
@@ -337,6 +360,11 @@ MAP
         system_build_dir = File.join(@static_sandbox_root,"..", "/build/Release-iphonesimulator")
       end
       result_dir = "#{@static_sandbox_root}/#{build_dir}"
+
+      puts "system_build_dir: #{system_build_dir}"
+      puts "build_dir: #{build_dir}"
+      puts "result_dir: #{result_dir}"
+
       `cp -rp #{system_build_dir}/#{@spec.name}/ #{result_dir} 2>&1`
       `cp -rp #{system_build_dir}/**/*.a #{result_dir} 2>&1`
       `cp -rp #{system_build_dir}/**/*.bundle #{result_dir} 2>&1`

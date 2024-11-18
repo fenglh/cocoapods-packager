@@ -76,6 +76,8 @@ module Pod
         end
 
         target_dir, work_dir = create_working_directory
+
+        puts  "target_dir: #{target_dir}, work_dir: #{work_dir}"
         return if target_dir.nil?
         build_package
 

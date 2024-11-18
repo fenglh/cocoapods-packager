@@ -38,9 +38,9 @@ module Framework
     def make_framework
       @fwk_path = @root_path + Pathname.new(@name + '.framework')
       @fwk_path.mkdir unless @fwk_path.exist?
-
       @module_map_path = @fwk_path + Pathname.new('Modules')
       @versions_path = @fwk_path + Pathname.new('Versions/A')
+      puts "fwk_path: #{@fwk_path}, module_map_path: #{@module_map_path}, versions_path: #{@versions_path}"
     end
 
     def make_headers

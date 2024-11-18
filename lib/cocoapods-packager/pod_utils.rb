@@ -13,6 +13,9 @@ module Pod
       end
 
       def install_pod(platform_name, sandbox)
+
+        puts "sanbox: #{sandbox}"
+
         podfile = podfile_from_spec(
           @path,
           @spec.name,
@@ -47,7 +50,7 @@ module Pod
             options[:podspec] = path
           end
         end
-        puts "-.-"
+
         options[:subspecs] = subspecs if subspecs
         Pod::Podfile.new do
           sources.each { |s| source s }
