@@ -18,35 +18,6 @@ module Pod
       @file_accessors = @static_installer.pod_targets.select { |t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
 
-    def build(package_type)
-      case package_type
-      when :static_library
-        build_static_library
-      when :static_framework
-        build_static_framework
-      when :dynamic_framework
-        build_dynamic_framework
-      end
-    end
-
-    def build_static_library
-      UI.puts("Building static library #{@spec} with configuration #{@config}")
-
-      defines = compile
-      build_sim_libraries(defines)
-
-      platform_path = Pathname.new(@platform.name.to_s)
-      platform_path.mkdir unless platform_path.exist?
-
-      output = platform_path + "lib#{@spec.name}.a"
-
-      if @platform.name == :ios
-        build_static_library_for_ios(output)
-      else
-        build_static_library_for_mac(output)
-      end
-    end
-
     def build_static_framework
 
       puts "开始编#{@config} 模式的Arm64静态framework #{@spec} "
@@ -62,12 +33,8 @@ module Pod
 
       puts "创建framework文件夹：#{output}"
 
-      if @platform.name == :ios
-        puts "开始合并X86_64、Arm64静态库 #{@spec} "
-        build_static_library_for_ios(output)
-      else
-        build_static_library_for_mac(output)
-      end
+      puts "开始合并X86_64、Arm64静态库 #{@spec} "
+      build_static_library_for_ios(output)
 
       puts "构建完成! 开始拷贝数据:"
 
@@ -86,62 +53,6 @@ module Pod
       end
     end
 
-    def build_dynamic_framework
-      UI.puts("Building dynamic framework #{@spec} with configuration #{@config}")
-
-      defines = compile
-      build_sim_libraries(defines)
-
-      if @bundle_identifier
-        defines = "#{defines} PRODUCT_BUNDLE_IDENTIFIER='#{@bundle_identifier}'"
-      end
-
-      output = "#{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name}"
-
-      clean_directory_for_dynamic_build
-      if @platform.name == :ios
-        build_dynamic_framework_for_ios(defines, output)
-      else
-        build_dynamic_framework_for_mac(defines, output)
-      end
-
-      copy_resources
-    end
-
-    def build_dynamic_framework_for_ios(defines, output)
-      # Specify frameworks to link and search paths
-      linker_flags = static_linker_flags_in_sandbox
-      defines = "#{defines} OTHER_LDFLAGS='$(inherited) #{linker_flags.join(' ')}'"
-
-      # Build Target Dynamic Framework for both device and Simulator
-      device_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
-      device_options = ios_build_options << ' -sdk iphoneos'
-      xcodebuild(device_defines, device_options, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
-
-      sim_defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build-sim\" ONLY_ACTIVE_ARCH=NO"
-      xcodebuild(sim_defines, '-sdk iphonesimulator', 'build-sim', @spec.name.to_s, @dynamic_sandbox_root.to_s)
-
-      # Combine architectures
-      `lipo #{@dynamic_sandbox_root}/build/#{@spec.name}.framework/#{@spec.name} #{@dynamic_sandbox_root}/build-sim/#{@spec.name}.framework/#{@spec.name} -create -output #{output}`
-
-      FileUtils.mkdir(@platform.name.to_s)
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{@platform.name}`
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{@platform.name}`
-    end
-
-    def build_dynamic_framework_for_mac(defines, _output)
-      # Specify frameworks to link and search paths
-      linker_flags = static_linker_flags_in_sandbox
-      defines = "#{defines} OTHER_LDFLAGS=\"#{linker_flags.join(' ')}\""
-
-      # Build Target Dynamic Framework for osx
-      defines = "#{defines} LIBRARY_SEARCH_PATHS=\"#{Dir.pwd}/#{@static_sandbox_root}/build\""
-      xcodebuild(defines, nil, 'build', @spec.name.to_s, @dynamic_sandbox_root.to_s)
-
-      FileUtils.mkdir(@platform.name.to_s)
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework #{@platform.name}`
-      `mv #{@dynamic_sandbox_root}/build/#{@spec.name}.framework.dSYM #{@platform.name}`
-    end
 
     # 构建模拟器库
     def build_sim_libraries(defines)
@@ -168,10 +79,6 @@ module Pod
       `#{cmd}`
     end
 
-    def build_static_library_for_mac(output)
-      static_libs = static_libs_in_sandbox + vendored_libraries
-      `libtool -static -o #{output} #{static_libs.join(' ')}`
-    end
 
     def build_with_mangling(options)
       UI.puts 'Mangling symbols'

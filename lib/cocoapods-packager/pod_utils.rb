@@ -14,8 +14,6 @@ module Pod
 
       def install_pod(platform_name, sandbox)
 
-        puts "sanbox: #{sandbox}"
-
         podfile = podfile_from_spec(
           @path,
           @spec.name,
@@ -55,7 +53,8 @@ module Pod
         Pod::Podfile.new do
           sources.each { |s| source s }
           platform(platform_name, deployment_target)
-          use_modular_headers! if use_modular_headers
+          use_modular_headers!
+          use_frameworks!
           pod(spec_name, options)
 
 

@@ -13,10 +13,7 @@ module Pod
           ['--force',     'Overwrite existing files.'],
           ['--no-mangle', 'Do not mangle symbols of depedendant Pods.'],
           ['--embedded',  'Generate embedded frameworks.'],
-          ['--library',   'Generate static libraries.'],
-          ['--dynamic',   'Generate dynamic framework.'],
           ['--local',     'Use local state rather than published versions.'],
-          ['--bundle-identifier', 'Bundle identifier for dynamic framework'],
           ['--exclude-deps', 'Exclude symbols from dependencies.'],
           ['--configuration', 'Build the specified configuration (e.g. Debug). Defaults to Release'],
           ['--subspecs', 'Only include the given subspecs'],
@@ -27,21 +24,10 @@ module Pod
 
       def initialize(argv)
         @embedded = argv.flag?('embedded')
-        @library = argv.flag?('library')
-        @dynamic = argv.flag?('dynamic')
         @local = argv.flag?('local', false)
-        @package_type = if @embedded
-                          :static_framework
-                        elsif @dynamic
-                          :dynamic_framework
-                        elsif @library
-                          :static_library
-                        else
-                          :static_framework
-                        end
+        @package_type = :static_framework
         @force = argv.flag?('force')
         @mangle = argv.flag?('mangle', true)
-        @bundle_identifier = argv.option('bundle-identifier', nil)
         @exclude_deps = argv.flag?('exclude-deps', false)
         @name = argv.shift_argument
         @source = argv.shift_argument
@@ -64,8 +50,6 @@ module Pod
         super
         help! 'A podspec name or path is required.' unless @spec
         help! 'podspec has binary-only depedencies, mangling not possible.' if @mangle && binary_only?(@spec)
-        help! '--bundle-identifier option can only be used for dynamic frameworks' if @bundle_identifier && !@dynamic
-        help! '--exclude-deps option can only be used for static libraries' if @exclude_deps && @dynamic
         help! '--local option can only be used when a local `.podspec` path is given.' if @local && !@is_spec_from_path
       end
 
@@ -91,29 +75,29 @@ module Pod
         config.installation_root  = Pathname.new(Dir.pwd)
         config.sandbox_root       = 'Pods'
 
-        static_sandbox = build_static_sandbox(@dynamic)
+        static_sandbox = build_static_sandbox(false)
+
+        puts "开始安装pod:#{static_sandbox.root}"
         static_installer = install_pod(platform.name, static_sandbox)
+        puts "安装pod结束"
 
-        if @dynamic
-          dynamic_sandbox = build_dynamic_sandbox(static_sandbox, static_installer)
-          install_dynamic_pod(dynamic_sandbox, static_sandbox, static_installer, platform)
-        end
 
-        begin
-          perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
-        ensure # in case the build fails; see Builder#xcodebuild.
-          Pathname.new(config.sandbox_root).rmtree
-          FileUtils.rm_f('Podfile.lock')
-        end
+        # begin
+        #   puts "执行构建, 平台：#{platform.nam} "
+        #   perform_build(platform, static_sandbox, static_installer)
+        # ensure # in case the build fails; see Builder#xcodebuild.
+        #   Pathname.new(config.sandbox_root).rmtree
+        #   FileUtils.rm_f('Podfile.lock')
+        # end
       end
 
       def build_package
-        builder = SpecBuilder.new(@spec, @source, @embedded, @dynamic)
+        builder = SpecBuilder.new(@spec, @source, @embedded, false)
         newspec = builder.spec_metadata
 
         @spec.available_platforms.each do |platform|
+          puts "准备构建，平台: #{platform.name}"
           build_in_sandbox(platform)
-
           newspec += builder.spec_platform(platform)
         end
 
@@ -145,31 +129,26 @@ module Pod
         [target_dir, work_dir]
       end
 
-      def perform_build(platform, static_sandbox, dynamic_sandbox, static_installer)
+      def perform_build(platform, static_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
-
-        if @dynamic
-          static_sandbox_root = "#{static_sandbox_root}/#{static_sandbox.root.to_s.split('/').last}"
-          dynamic_sandbox_root = "#{config.sandbox_root}/#{dynamic_sandbox.root.to_s.split('/').last}"
-        end
-
+        puts "构建沙盒跟目录:#{static_sandbox_root}"
         builder = Pod::Builder.new(
           platform,
           static_installer,
           @source_dir,
           static_sandbox_root,
-          dynamic_sandbox_root,
+          nil,
           static_sandbox.public_headers.root,
           @spec,
           @embedded,
           @mangle,
-          @dynamic,
+          false,
           @config,
-          @bundle_identifier,
+          nil,
           @exclude_deps
         )
 
-        builder.build(@package_type)
+        builder.build_static_framework
 
         return unless @embedded
         builder.link_embedded_resources
