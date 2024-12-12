@@ -146,7 +146,7 @@ module Pod
           @exclude_deps
         )
 
-        builder.build_static_framework
+        # builder.build_static_framework
         builder.build_sim_static_framework
 
         # return unless @embedded

@@ -299,7 +299,7 @@ module Pod
 
     def xcodebuild(is_sim = false, build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)
 
-      args = 'BUILD_LIBRARY_FOR_DISTRIBUTION=YES'
+      args = 'BUILD_LIBRARY_FOR_DISTRIBUTION=YES ENABLE_BITCODE=NO'
 
       if defined?(Pod::DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
@@ -330,13 +330,13 @@ module Pod
         Process.exit
       end
 
-      # system_build_dir = File.join(@static_sandbox_root, "..","/build/Release-iphoneos")
-      # if is_sim
-      #   system_build_dir = File.join(@static_sandbox_root, "..","/build/Release-iphonesimulator")
-      # end
-      #
-      # result_dir = "#{@static_sandbox_root}/.."
-      # `cp -rp #{system_build_dir}/#{@spec.name}/ #{result_dir}`
+      system_build_dir = File.join(@static_sandbox_root, "..","/build/Release-iphoneos")
+      if is_sim
+        system_build_dir = File.join(@static_sandbox_root, "..","/build/Release-iphonesimulator")
+      end
+      
+      result_dir = "#{@static_sandbox_root}/.."
+      `cp -rp #{system_build_dir}/#{@spec.name}/ #{result_dir}`
 
     end
   end
