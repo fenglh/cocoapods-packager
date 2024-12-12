@@ -77,18 +77,17 @@ module Pod
 
         static_sandbox = build_static_sandbox(false)
 
-        puts "开始安装pod:#{static_sandbox.root}"
+        puts "开始安装pods:#{static_sandbox.root}"
         static_installer = install_pod(platform.name, static_sandbox)
-        puts "安装pod结束"
+        puts "安装pods 完成"
 
-
-        # begin
-        #   puts "执行构建, 平台：#{platform.nam} "
-        #   perform_build(platform, static_sandbox, static_installer)
-        # ensure # in case the build fails; see Builder#xcodebuild.
-        #   Pathname.new(config.sandbox_root).rmtree
-        #   FileUtils.rm_f('Podfile.lock')
-        # end
+        begin
+          perform_build(platform, static_sandbox, static_installer)
+        ensure # in case the build fails; see Builder#xcodebuild.
+          puts "删除中间产物:#{config.sandbox_root}"
+          Pathname.new(config.sandbox_root).rmtree
+          FileUtils.rm_f('Podfile.lock')
+        end
       end
 
       def build_package
@@ -131,7 +130,6 @@ module Pod
 
       def perform_build(platform, static_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
-        puts "构建沙盒跟目录:#{static_sandbox_root}"
         builder = Pod::Builder.new(
           platform,
           static_installer,
@@ -149,9 +147,10 @@ module Pod
         )
 
         builder.build_static_framework
+        builder.build_sim_static_framework
 
-        return unless @embedded
-        builder.link_embedded_resources
+        # return unless @embedded
+        # builder.link_embedded_resources
       end
     end
   end

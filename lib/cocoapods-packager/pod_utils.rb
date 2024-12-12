@@ -14,6 +14,7 @@ module Pod
 
       def install_pod(platform_name, sandbox)
 
+        puts "platform_name: #{platform_name}"
         podfile = podfile_from_spec(
           @path,
           @spec.name,
@@ -29,8 +30,11 @@ module Pod
         unless static_installer.nil?
           static_installer.pods_project.targets.each do |target|
             target.build_configurations.each do |config|
-              config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
+              # config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
               config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
+              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+              config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+              config.build_settings['MACH_O_TYPE'] = 'staticlib'
             end
           end
           static_installer.pods_project.save
@@ -49,6 +53,7 @@ module Pod
           end
         end
 
+        puts "deployment_target: #{deployment_target}"
         options[:subspecs] = subspecs if subspecs
         Pod::Podfile.new do
           sources.each { |s| source s }
