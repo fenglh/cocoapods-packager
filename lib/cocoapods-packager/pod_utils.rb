@@ -30,11 +30,12 @@ module Pod
         unless static_installer.nil?
           static_installer.pods_project.targets.each do |target|
             target.build_configurations.each do |config|
-              # config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
+              config.build_settings['CLANG_MODULES_AUTOLINK'] = 'YES'
               config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-              config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+              config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
+              config.build_settings['ENABLE_BITCODE'] = 'NO'
               config.build_settings['MACH_O_TYPE'] = 'staticlib'
+              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
             end
           end
           static_installer.pods_project.save
