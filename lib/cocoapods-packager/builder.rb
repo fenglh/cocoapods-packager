@@ -85,7 +85,7 @@ module Pod
 
     def xcodebuild(is_sim = false, build_dir = 'build', target = 'Pods-packager', project_root = @static_sandbox_root, config = @config)
 
-      args = 'BUILD_LIBRARY_FOR_DISTRIBUTION=NO ENABLE_BITCODE=NO'
+      args = 'BUILD_LIBRARY_FOR_DISTRIBUTION=NO ENABLE_BITCODE=NO GCC_PREPROCESSOR_DEFINITIONS=\'$(inherited)\''
 
       if defined?(Pod::DONT_CODESIGN)
         args = "#{args} CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO"
