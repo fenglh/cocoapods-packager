@@ -70,7 +70,7 @@ module Pod
         `mv "#{work_dir}" "#{target_dir}"`
         puts "mv work_dir：#{work_dir} to target_dir：#{target_dir}"
         Dir.chdir(@source_dir)
-        
+
         puts "chdir #{@source_dir}"
       end
 
@@ -114,8 +114,8 @@ module Pod
 
           unless tmp_framework.nil?
             resources_spec, resource_bundles_spec = generate_resources_and_bundles(tmp_framework)
-            newspec += " s.resources = #{resources_spec}\n"
-            newspec += " s.resource_bundles = #{resource_bundles_spec}\n"
+            newspec += "  s.resources = #{resources_spec}\n"
+            newspec += "  s.resource_bundles = #{resource_bundles_spec}\n"
 
             # 生成.zip
             zip_framework(tmp_framework)

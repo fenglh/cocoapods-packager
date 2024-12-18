@@ -13,11 +13,9 @@ module Pod
 
 
     def spec_platform(platform)
-      fwk_base = platform.name.to_s + '/' + framework_name
-
       spec = <<~RB
       s.#{platform.name}.deployment_target = '#{platform.deployment_target}'
-      s.#{platform.name}.vendored_framework = '#{fwk_base}'
+      s.#{platform.name}.vendored_framework = '#{framework_name}.zip'
   RB
       spec = spec.lines.map { |line| "  " + line }.join
 
