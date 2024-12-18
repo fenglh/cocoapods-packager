@@ -14,42 +14,32 @@ module Pod
       @config = config
       @bundle_identifier = bundle_identifier
       @exclude_deps = exclude_deps
-
       @file_accessors = @static_installer.pod_targets.select { |t| t.pod_name == @spec.name }.flat_map(&:file_accessors)
     end
-    
 
-    def build_static_framework
-      xcodebuild(false)
-
+    def make_output_dir
+      `mkdir -p #{@static_sandbox_root}`
     end
 
-    def build_sim_static_framework
-      xcodebuild(true)
+    def framework_output_dir(sim = false)
+      return sim ? "sim_framework" : "framework"
     end
 
-    
+    def build
+      # 构建模拟器架构
+      sim_framework_output_path = framework_output_dir( true)
+      `mkdir -p #{sim_framework_output_path}`
+      framework_sim = xcodebuild(true)
 
-    def build_with_mangling(options)
-      UI.puts 'Mangling symbols'
-      defines = Symbols.mangle_for_pod_dependencies(@spec.name, @static_sandbox_root)
-      defines << ' ' << @spec.consumer(@platform).compiler_flags.join(' ')
-
-      UI.puts 'Building mangled framework'
-      xcodebuild(defines, options)
-      defines
+      # 构建真机架构
+      framework_output_path = framework_output_dir( false)
+      `mkdir -p #{framework_output_path}`
+      framework = xcodebuild(false)
+      [framework_sim, framework]
     end
 
-    def clean_directory_for_dynamic_build
-      # Remove static headers to avoid duplicate declaration conflicts
-      FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Public/#{@spec.name}")
-      FileUtils.rm_rf("#{@static_sandbox_root}/Headers/Private/#{@spec.name}")
 
-      # Equivalent to removing derrived data
-      FileUtils.rm_rf('Pods/build')
-    end
 
-    
 
     def expand_paths(path_specs)
       path_specs.map do |path_spec|
@@ -57,14 +47,7 @@ module Pod
       end
     end
 
-    def static_libs_in_sandbox(build_dir = 'build')
-      if @exclude_deps
-        UI.puts 'Excluding dependencies'
-        Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib#{@spec.name}.a")
-      else
-        Dir.glob("#{@static_sandbox_root}/#{build_dir}/lib*.a")
-      end
-    end
+
 
     def vendored_libraries
       if @vendored_libraries
@@ -116,14 +99,20 @@ module Pod
         Process.exit
       end
 
-      system_build_dir = File.join(@static_sandbox_root, "..","/build/Release-iphoneos")
+      system_build_dir = "build/Release-iphoneos"
       if is_sim
-        system_build_dir = File.join(@static_sandbox_root, "..","/build/Release-iphonesimulator")
+        system_build_dir = "build/Release-iphonesimulator"
       end
-      
-      result_dir = "#{@static_sandbox_root}/.."
-      `cp -rp #{system_build_dir}/#{@spec.name}/ #{result_dir}`
 
+      build_framework_path = "#{system_build_dir}/#{@spec.name}/#{@spec.name}.framework"
+
+      output_dir = framework_output_dir(is_sim)
+
+      new_framewwork_dir = is_sim ? "#{output_dir}/#{@spec.name}.framework" : "#{output_dir}/#{@spec.name}.framework"
+
+      `cp -rp #{build_framework_path} #{new_framewwork_dir}`
+
+      new_framewwork_dir
     end
   end
 end

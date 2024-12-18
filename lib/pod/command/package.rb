@@ -60,44 +60,68 @@ module Pod
         end
 
         target_dir, work_dir = create_working_directory
-
-        puts  "target_dir: #{target_dir}, work_dir: #{work_dir}"
+        puts  "create target_dir: #{target_dir}, work_dir: #{work_dir}"
         return if target_dir.nil?
-        build_package
 
+        Dir.chdir(work_dir)
+        puts "chdir #{work_dir}"
+
+        build_package
         `mv "#{work_dir}" "#{target_dir}"`
+        puts "mv work_dir：#{work_dir} to target_dir：#{target_dir}"
         Dir.chdir(@source_dir)
+        puts "chdir #{@source_dir}"
       end
 
       private
 
       def build_in_sandbox(platform)
-        config.installation_root  = Pathname.new(Dir.pwd)
-        config.sandbox_root       = 'Pods'
-
+        # 当前目录设置为安装目录
+        config.installation_root = Pathname.new(Dir.pwd)
+        config.sandbox_root = 'Pods'
+        # 构建静态沙盒
         static_sandbox = build_static_sandbox(false)
-
-        puts "开始安装pods:#{static_sandbox.root}"
+        # 安装pods
         static_installer = install_pod(platform.name, static_sandbox)
-        puts "安装pods 完成"
 
         begin
-          perform_build(platform, static_sandbox, static_installer)
+          # 执行构建，获取返回的 sim_framework 和 framework
+          sim_framework, framework = perform_build(platform, static_sandbox, static_installer)
+          return sim_framework, framework
         ensure # in case the build fails; see Builder#xcodebuild.
-          puts "删除中间产物:#{config.sandbox_root}"
           Pathname.new(config.sandbox_root).rmtree
           FileUtils.rm_f('Podfile.lock')
+          puts  "移除Pods、Podfile.lock"
         end
       end
+
 
       def build_package
         builder = SpecBuilder.new(@spec, @source, @embedded, false)
         newspec = builder.spec_metadata
-
         @spec.available_platforms.each do |platform|
-          puts "准备构建，平台: #{platform.name}"
-          build_in_sandbox(platform)
+
+          sim_framework, framework = build_in_sandbox(platform)
+
+          puts "build finished! sim_framework:#{sim_framework}, framework:#{framework}"
+
           newspec += builder.spec_platform(platform)
+
+          puts "pwd: #{Dir.pwd}"
+
+
+
+          if Dir.exist?(sim_framework)
+            newspec += builder.spec_resources(platform, sim_framework)
+          elsif Dir.exist?(framework)
+            newspec += builder.spec_resources(platform, framework)
+          else
+            puts "No framework exist !"
+          end
+
+
+
+
         end
 
         newspec += builder.spec_close
@@ -120,15 +144,12 @@ module Pod
       def create_working_directory
         target_dir = create_target_directory
         return if target_dir.nil?
-
         work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
         Pathname.new(work_dir).mkdir
-        Dir.chdir(work_dir)
-
         [target_dir, work_dir]
       end
-
       def perform_build(platform, static_sandbox, static_installer)
+        # 即Pods 目录
         static_sandbox_root = config.sandbox_root.to_s
         builder = Pod::Builder.new(
           platform,
@@ -145,12 +166,8 @@ module Pod
           nil,
           @exclude_deps
         )
-
-        # builder.build_static_framework
-        builder.build_sim_static_framework
-
-        # return unless @embedded
-        # builder.link_embedded_resources
+        frameworks = builder.build
+        frameworks
       end
     end
   end
