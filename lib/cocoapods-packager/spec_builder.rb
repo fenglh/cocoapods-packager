@@ -11,29 +11,6 @@ module Pod
       @spec.name + '.framework'
     end
 
-    def spec_resources(platform, framework_path)
-      resource_names = [@spec, *@spec.recursive_subspecs].flat_map do |spec|
-        consumer = spec.consumer(platform)
-        consumer.resources.map do |r|
-          File.basename(r)
-        end
-      end
-      puts "所有资源名字: #{resource_names}"
-      # 用来存放匹配的相对路径
-      matched_files = []
-      resource_names.each do |pattern|
-        # 使用 Dir.glob 查找匹配的文件
-        puts "搜索目录: #{framework_path}"
-        Dir.glob(File.join(framework_path, pattern)) do |file|
-          # 计算文件的相对路径
-          puts "spec 指定的resource: #{file}"
-          relative_path = Pathname.new(file).relative_path_from(Pathname.new(framework_path)).to_s
-          matched_files << relative_path
-        end
-      end
-      ret = "  s.resources = [#{matched_files.map { |item| "'#{item}'" }.join(', ')}]\n"
-      ret
-    end
 
     def spec_platform(platform)
       fwk_base = platform.name.to_s + '/' + framework_name

@@ -109,18 +109,13 @@ module Pod
 
           puts "pwd: #{Dir.pwd}"
 
+          tmp_framework = Dir.exist?(sim_framework) ? sim_framework : framework
 
-
-          if Dir.exist?(sim_framework)
-            newspec += builder.spec_resources(platform, sim_framework)
-          elsif Dir.exist?(framework)
-            newspec += builder.spec_resources(platform, framework)
-          else
-            puts "No framework exist !"
+          unless tmp_framework.nil?
+            resources_spec, resource_bundles_spec = generate_resources_and_bundles(tmp_framework)
+            newspec += " s.resources = #{resources_spec}\n"
+            newspec += " s.resource_bundles = #{resource_bundles_spec}\n"
           end
-
-
-
 
         end
 
@@ -128,6 +123,37 @@ module Pod
         File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
       end
 
+      # 生成 s.resources 和 s.resource_bundles
+      def generate_resources_and_bundles(framework_path)
+        resources = []
+        resource_bundles = {}
+
+        # 使用 Pathname 处理路径
+        resources_path = Pathname.new(framework_path) + 'Resources'
+
+        puts "resources_path:#{resources_path}"
+        # 获取所有资源文件（排除 .bundle 文件）
+        Dir.glob("#{resources_path}/*") do |file|
+          puts "遍历Resource 资源：#{file}"
+          # 如果是 bundle 文件，放入 s.resource_bundles
+          if File.extname(file) == '.bundle'
+            bundle_name = File.basename(file, '.bundle')
+            resource_bundles[bundle_name] ||= []
+            resource_bundles[bundle_name] << file
+          else
+            # 否则是普通资源文件，放入 s.resources
+            resources << file
+          end
+        end
+
+        # 格式化为 podspec 的 resources 和 resource_bundles
+        resources_spec = resources.map { |file| "Resources/#{Pathname.new(file).relative_path_from(resources_path)}" }
+        resource_bundles_spec = resource_bundles.map do |bundle_name, files|
+          "#{bundle_name} => #{files.map { |file| "Resources/#{Pathname.new(file).relative_path_from(resources_path)}" }.join(' ')}"
+        end
+
+        return resources_spec, resource_bundles_spec
+      end
       def create_target_directory
         target_dir = "#{@source_dir}/#{@spec.name}-#{@spec.version}"
         if File.exist? target_dir

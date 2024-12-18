@@ -28,12 +28,12 @@ module Pod
     def build
 
       # 构建真机架构
-      framework = build_framework
+      # framework = build_framework
 
       # 构建模拟器架构
       framework_sim = build_sim_framework
 
-      [framework, framework_sim]
+      [nil, framework_sim]
     end
 
     def build_framework
@@ -119,11 +119,81 @@ module Pod
 
       output_dir = framework_output_dir(is_sim)
 
-      new_framewwork_dir = is_sim ? "#{output_dir}/#{@spec.name}.framework" : "#{output_dir}/#{@spec.name}.framework"
+      new_framewwork_path = is_sim ? "#{output_dir}/#{@spec.name}.framework" : "#{output_dir}/#{@spec.name}.framework"
 
-      `cp -rp #{build_framework_path} #{new_framewwork_dir}`
+      `cp -rp #{build_framework_path} #{new_framewwork_path}`
 
-      new_framewwork_dir
+      copy_Resources(new_framewwork_path)
+      new_framewwork_path
     end
+
+
+    def copy_Resources(framework_path)
+      # 使用 Pathname 来处理路径
+      resources_path = Pathname.new(framework_path) + 'Resources'
+      resources_path.mkpath unless resources_path.exist?
+
+      # 拷贝 .bundle 文件
+      move_bundles(framework_path, resources_path)
+
+      # 拷贝其他资源
+      move_resources(framework_path, resources_path)
+    end
+
+    private
+
+    # 拷贝 .bundle 文件
+    def move_bundles(framework_path, resources_path)
+      bundles = Dir.glob("#{framework_path}/**/*.bundle")
+      bundle_names = get_bundle_names
+
+      matched_bundles = bundles.select do |bundle|
+        bundle_name = File.basename(bundle, '.bundle')
+        bundle_names.include?(bundle_name)
+      end
+
+      # 使用 FileUtils.mv 来移动文件，避免 shell 注入问题
+      unless matched_bundles.empty?
+        FileUtils.mv(matched_bundles, resources_path.to_path)
+        puts "移动了以下 bundle 文件: #{matched_bundles.join(', ')}"
+      end
+    end
+
+    # 获取所有需要的 .bundle 文件名称
+    def get_bundle_names
+      [@spec, *@spec.recursive_subspecs].flat_map do |spec|
+        consumer = spec.consumer(@platform)
+        consumer.resource_bundles.keys + consumer.resources.map do |r|
+          File.basename(r, '.bundle') if File.extname(r) == '.bundle'
+        end
+      end.compact.uniq
+    end
+
+    # 拷贝其他资源文件
+    def move_resources(framework_path, resources_path)
+      resource_names = get_resource_names
+
+      resources = resource_names.flat_map do |pattern|
+        Dir.glob(File.join(framework_path, pattern)).map do |file|
+          puts "匹配到的资源: #{file}"
+          file
+        end
+      end.compact.uniq
+
+      unless resources.empty?
+        FileUtils.mv(resources, resources_path.to_path)
+        puts "移动了以下资源文件: #{resources.join(', ')}"
+      end
+    end
+
+    # 获取所有资源文件名称
+    def get_resource_names
+      [@spec, *@spec.recursive_subspecs].flat_map do |spec|
+        consumer = spec.consumer(@platform)
+        consumer.resources.map { |r| File.basename(r) }
+      end
+    end
+
+
   end
 end
