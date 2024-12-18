@@ -26,18 +26,29 @@ module Pod
     end
 
     def build
-      # 构建模拟器架构
-      sim_framework_output_path = framework_output_dir( true)
-      `mkdir -p #{sim_framework_output_path}`
-      framework_sim = xcodebuild(true)
 
       # 构建真机架构
+      framework = build_framework
+
+      # 构建模拟器架构
+      framework_sim = build_sim_framework
+
+      [framework, framework_sim]
+    end
+
+    def build_framework
       framework_output_path = framework_output_dir( false)
       `mkdir -p #{framework_output_path}`
       framework = xcodebuild(false)
-      [framework_sim, framework]
+      framework
     end
 
+    def  build_sim_framework
+      sim_framework_output_path = framework_output_dir( true)
+      `mkdir -p #{sim_framework_output_path}`
+      framework_sim = xcodebuild(true)
+      framework_sim
+    end
 
 
 

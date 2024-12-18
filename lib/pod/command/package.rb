@@ -86,8 +86,8 @@ module Pod
 
         begin
           # 执行构建，获取返回的 sim_framework 和 framework
-          sim_framework, framework = perform_build(platform, static_sandbox, static_installer)
-          return sim_framework, framework
+          frameworks = perform_build(platform, static_sandbox, static_installer)
+          return frameworks
         ensure # in case the build fails; see Builder#xcodebuild.
           Pathname.new(config.sandbox_root).rmtree
           FileUtils.rm_f('Podfile.lock')
@@ -101,7 +101,7 @@ module Pod
         newspec = builder.spec_metadata
         @spec.available_platforms.each do |platform|
 
-          sim_framework, framework = build_in_sandbox(platform)
+          framework, sim_framework = build_in_sandbox(platform)
 
           puts "build finished! sim_framework:#{sim_framework}, framework:#{framework}"
 
