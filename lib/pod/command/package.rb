@@ -70,6 +70,8 @@ module Pod
         `mv "#{work_dir}" "#{target_dir}"`
         puts "mv work_dir：#{work_dir} to target_dir：#{target_dir}"
         Dir.chdir(@source_dir)
+
+
         puts "chdir #{@source_dir}"
       end
 
@@ -117,11 +119,35 @@ module Pod
             newspec += " s.resource_bundles = #{resource_bundles_spec}\n"
           end
 
+          # 压缩
+          unless tmp_framework.nil?
+            zip_framework(tmp_framework)
+          end
+
         end
 
         newspec += builder.spec_close
         File.open(@spec.name + '.podspec', 'w') { |file| file.write(newspec) }
+
+
       end
+
+      def zip_framework(framework_path)
+        parent_path = File.dirname(framework_path)
+
+        framework_name = File.basename(framework_path)
+
+        # 使用系统的 zip 命令来压缩文件夹
+        zipfile_name = " #{framework_name}.zip"
+        `cd #{parent_path} && zip -r #{zipfile_name} #{framework_name}`
+        # 检查命令是否成功执行
+        if $?.success?
+          puts "Successfully created #{zipfile_name}"
+        else
+          puts "Failed to create zip file"
+        end
+      end
+
 
       # 生成 s.resources 和 s.resource_bundles
       def generate_resources_and_bundles(framework_path)

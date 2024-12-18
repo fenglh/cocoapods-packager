@@ -19,6 +19,7 @@ module Pod
       s.#{platform.name}.deployment_target = '#{platform.deployment_target}'
       s.#{platform.name}.vendored_framework = '#{fwk_base}'
   RB
+      spec = spec.lines.map { |line| "  " + line }.join
 
       # 遍历属性，添加相关的配置
       %w(frameworks weak_frameworks libraries requires_arc xcconfig).each do |attribute|
