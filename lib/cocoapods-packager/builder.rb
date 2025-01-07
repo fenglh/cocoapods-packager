@@ -167,14 +167,14 @@ module Pod
 
       resources = resource_names.flat_map do |pattern|
         Dir.glob(File.join(framework_path, pattern)).map do |file|
-          puts "匹配到的资源: #{file}"
+          puts "找到资源文件: #{file}"
           file
         end
       end.compact.uniq
 
       unless resources.empty?
         FileUtils.mv(resources, resources_path.to_path)
-        puts "移动了以下资源文件: #{resources.join(', ')}"
+        puts "拷贝资源文件: #{resources.join(', ')}"
       end
     end
 

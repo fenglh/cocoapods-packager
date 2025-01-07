@@ -12,10 +12,9 @@ module Pod
       # 配置选项
       def self.options
         [
-          ['--force',     '覆盖已存在的文件。'],
+          ['--force',     '覆盖已存在的文件。默认 true'],
           ['--distribution', '为发布构建库。默认 false'],
-          ['--no-mangle', '不对依赖的 Pods 进行符号混淆。'],
-          ['--embedded',  '生成嵌入式框架。'],
+          ['--no-mangle', '不对依赖的 Pods 进行符号混淆。默认true'],
           ['--local',     '使用本地状态而非发布版本。'],
           ['--exclude-deps', '排除依赖的符号。'],
           ['--configuration', '构建指定的配置（例如 Debug）。默认为 Release。'],
@@ -28,13 +27,13 @@ module Pod
         # 初始化实例变量
         @embedded = argv.flag?('embedded')
         @local = argv.flag?('local', false)
-        @force = argv.flag?('force')
+        @force = argv.flag?('force', true)
         @distribution = argv.flag?('distribution', false)
         @mangle = argv.flag?('mangle', true)
-        @exclude_deps = argv.flag?('exclude-deps', false)
+        @exclude_deps = argv.flag?('exclude-deps', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
-        @spec_sources = argv.option('spec-sources', 'https://github.com/CocoaPods/Specs.git').split(',')
+        @spec_sources = argv.option('spec-sources', 'git@gitit.cc:social-infra/ios/cocoapods-repo.git,https://github.com/CocoaPods/Specs.git').split(',')
         @subspecs = argv.option('subspecs')&.split(',')
         @config = argv.option('configuration', 'Release')
 
