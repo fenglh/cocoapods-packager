@@ -3,25 +3,20 @@ module Pod
     class Package < Command
       private
 
-      def build_static_sandbox(dynamic)
-        static_sandbox_root = if dynamic
-                                Pathname.new(config.sandbox_root + '/Static')
-                              else
-                                Pathname.new(config.sandbox_root)
-                              end
+      def make_sandbox()
+        static_sandbox_root = Pathname.new(config.sandbox_root)
         Sandbox.new(static_sandbox_root)
       end
 
-      def install_pod(platform_name, sandbox)
+      def install_pod(spec, spec_sources, platform_name, sandbox)
 
-        puts "platform_name: #{platform_name}"
         podfile = podfile_from_spec(
-          @path,
-          @spec.name,
+          spec.defined_in_file,
+          spec.name,
           platform_name,
-          @spec.deployment_target(platform_name),
-          @subspecs,
-          @spec_sources
+          spec.deployment_target(platform_name),
+          nil,
+          spec_sources
         )
 
         static_installer = Installer.new(sandbox, podfile)
@@ -47,11 +42,7 @@ module Pod
       def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources, use_modular_headers = true)
         options = {}
         if path
-          if @local
-            options[:path] = path
-          else
-            options[:podspec] = path
-          end
+          options[:podspec] = path
         end
 
         puts "deployment_target: #{deployment_target}"
@@ -96,26 +87,39 @@ module Pod
         set.specification.root
       end
 
+      # 定义一个方法，用于从给定路径加载一个 Podspec 文件
       def spec_with_path(path)
+        # 如果传入的 path 是 nil，则直接返回，不做任何操作
         return if path.nil?
+
+        # 将传入的 path 转换为 Pathname 对象，这样可以方便地操作路径
         path = Pathname.new(path)
+
+        # 如果传入的路径不是绝对路径（即没有以根目录 / 开头），则将当前工作目录与该路径拼接，形成绝对路径
         path = Pathname.new(Dir.pwd).join(path) unless path.absolute?
+
+        # 如果拼接后的路径不存在，则直接返回
         return unless path.exist?
 
-        @path = path.expand_path
+        # 将 path 转换为绝对路径（规范化路径），并赋值给实例变量 @path
+        absolutePath = path.expand_path
 
-        if @path.directory?
-          help! @path + ': is a directory.'
+        # 如果路径指向的是一个目录，而不是文件，给出提示并返回
+        if absolutePath.directory?
+          help! absolutePath + ': is a directory.'
           return
         end
 
-        unless ['.podspec', '.json'].include? @path.extname
-          help! @path + ': is not a podspec.'
+        # 如果文件扩展名既不是 .podspec 也不是 .json，给出提示并返回
+        unless ['.podspec', '.json'].include? absolutePath.extname
+          help! absolutePath + ': is not a podspec.'
           return
         end
 
-        Specification.from_file(@path)
+        # 如果路径有效且符合要求，尝试从文件中加载 Specification 对象
+        Specification.from_file(absolutePath)
       end
+
 
       #----------------------
       # Dynamic Project Setup

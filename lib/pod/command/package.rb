@@ -12,10 +12,8 @@ module Pod
       # 配置选项
       def self.options
         [
-          ['--force',     '覆盖已存在的文件。默认 true'],
           ['--distribution', '为发布构建库。默认 false'],
           ['--no-mangle', '不对依赖的 Pods 进行符号混淆。默认true'],
-          ['--local',     '使用本地状态而非发布版本。'],
           ['--exclude-deps', '排除依赖的符号。'],
           ['--configuration', '构建指定的配置（例如 Debug）。默认为 Release。'],
           ['--subspecs', '仅包含指定的子规格。'],
@@ -26,62 +24,130 @@ module Pod
       def initialize(argv)
         # 初始化实例变量
         @embedded = argv.flag?('embedded')
-        @local = argv.flag?('local', false)
-        @force = argv.flag?('force', true)
         @distribution = argv.flag?('distribution', false)
         @mangle = argv.flag?('mangle', true)
         @exclude_deps = argv.flag?('exclude-deps', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
         @spec_sources = argv.option('spec-sources', 'git@gitit.cc:social-infra/ios/cocoapods-repo.git,https://github.com/CocoaPods/Specs.git').split(',')
-        @subspecs = argv.option('subspecs')&.split(',')
         @config = argv.option('configuration', 'Release')
-
+        @all = argv.flag?('all', false)
         @source_dir = Dir.pwd
-        @is_spec_from_path = false
-        @spec = spec_with_path(@name) || spec_with_name(@name)
-        @is_spec_from_path = true if @spec
 
         super
       end
 
       def validate!
         super
-        help! '需要提供 podspec 名称或路径。' unless @spec
-        help! 'podspec 包含二进制依赖，无法进行符号混淆。' if @mangle && binary_only?(@spec)
-        help! '--local 选项只能在给定本地 `.podspec` 路径时使用。' if @local && !@is_spec_from_path
       end
 
       def run
-        # 如果无法找到 podspec，报错并退出
-        help! "无法找到名为 `#{@name}` 的 podspec。" unless @spec
 
-        target_dir, work_dir = create_working_directory
-        return if target_dir.nil?
+        if @all
+          specs = find_all_specs()
+          help! "无法找到有效的spec" unless !specs.empty?
+          puts "准备执着framework个数:#{specs.count}"
+          start(specs)
+        else
+          spec = spec_with_path(@name)
+          help! "无法找到名为 `#{@name}` 的 podspec。" unless spec
+          start([spec])
+        end
 
-        Dir.chdir(work_dir)
-        puts "已切换到工作目录：#{work_dir}"
+      end
 
-        build_package
-        `mv "#{work_dir}" "#{target_dir}"`
-        puts "已将工作目录移动到目标目录：#{target_dir}"
-
-        Dir.chdir(@source_dir)
-        puts "已返回原始目录：#{@source_dir}"
+      def pod_white_list
+        ['YLActivation',
+         'YLAnimation',
+         'YLAudit',
+         'YLBizJSBridge',
+         'YLCache',
+         'YLCloudConfig',
+         'YLConstellation',
+         'YLCore',
+         'YLEvent',
+         'YLGoldenEye',
+         'YLHyperosloCache',
+         'YLKaKaJSON',
+         'YLLeaksFinder',
+         'YLLog',
+         'YLMixPlayer',
+         'YLNetHook',
+         'YLNetwork',
+         'YLProtect',
+         'YLRaynet',
+         'YLReport',
+         'YLResource',
+         'YLRouter',
+         'YLSecurity',
+         'YLStatistic',
+         'YLStoreKit',
+         'YLSVGAPlayer',
+         'YLTiercel',
+         'YLUI',
+         'YLVIMediaCache',
+         'YLWeb',
+         'YYText',
+         'ZLPhotoBrowser']
       end
 
       private
 
-      # 构建静态沙盒并安装 Pod
-      def build_in_sandbox(platform)
-        config.installation_root = Pathname.new(Dir.pwd)
-        config.sandbox_root = 'Pods'
+      def start(specs)
+        specs.each do |spec|
+          target_dir, work_dir = create_working_directory(spec)
+          next if target_dir.nil?
+          if !pod_white_list.include?(spec.name)
+            puts "跳过非白名单Pod: #{spec}"
+            next
+          end
+          puts "开始制作framework:#{spec}"
+          Dir.chdir(work_dir)
+          build_package(spec)
+          `mv "#{work_dir}" "#{target_dir}"`
+          Dir.chdir(@source_dir)
+        end
+      end
 
-        static_sandbox = build_static_sandbox(false)
-        static_installer = install_pod(platform.name, static_sandbox)
+
+
+      def find_all_specs
+        sources = Pod::Config.instance.podfile.sources
+        specs = []
+        lockfile = Pod::Config.instance.lockfile
+        lockfile.pod_names.each do |pod_name|
+          pod_version = lockfile.version(pod_name)
+          spec = find_spec_in_sources(sources, pod_name, pod_version)
+          specs << spec if spec
+        end
+        specs
+      end
+
+      def find_spec_in_sources(sources, pod_name, pod_version)
+        sources.each do |source_url|
+          source = Pod::Config.instance.sources_manager.source_with_name_or_url(source_url)
+          begin
+            # 尝试从每个 source 中找到对应的 podspec
+            spec = source.specification(pod_name, pod_version.to_s)
+            return spec
+          rescue StandardError => e
+            next
+          end
+        end
+        nil  # 如果没有源提供，也可以返回 nil
+      end
+
+
+      # 构建静态沙盒并安装 Pod
+      def build_in_sandbox(spec, spec_sources, platform)
+        temp_dir = Dir.mktmpdir
+        config.installation_root = Pathname.new(temp_dir)
+        config.sandbox_root = 'Pods'
+        static_sandbox = make_sandbox()
+        static_installer = install_pod(spec, spec_sources,platform.name, static_sandbox)
 
         begin
-          frameworks = perform_build(platform, static_sandbox, static_installer)
+          frameworks = perform_build(spec, platform, static_sandbox, static_installer)
           return frameworks
         ensure
           clean_up_sandbox
@@ -96,16 +162,23 @@ module Pod
       end
 
       # 打包框架并生成新 podspec
-      def build_package
-        builder = SpecBuilder.new(@spec, @source, @embedded, false)
+      def build_package(spec)
+
+        puts "source: #{@source}"
+        builder = SpecBuilder.new(spec, @source, @embedded, false)
         newspec = builder.spec_metadata
 
-        @spec.available_platforms.each do |platform|
-          framework, sim_framework = build_in_sandbox(platform)
-          puts "构建完成！模拟器框架：#{sim_framework}，真机框架：#{framework}"
+        spec.available_platforms.each do |platform|
+          next unless platform.name.to_s == 'ios'
+          puts "platform: #{platform.name}"
+          framework, sim_framework = build_in_sandbox(spec, @spec_sources,platform)
+
+          if framework.nil? || sim_framework.nil?
+            puts  "framework 执着失败: #{spec.name}"
+            next
+          end
 
           newspec += builder.spec_platform(platform)
-
           tmp_framework = Dir.exist?(sim_framework) ? sim_framework : framework
           unless tmp_framework.nil?
             resources_spec, resource_bundles_spec = generate_resources_and_bundles(tmp_framework)
@@ -118,7 +191,7 @@ module Pod
         end
 
         newspec += builder.spec_close
-        File.write(@spec.name + '.podspec', newspec)
+        File.write(spec.name + '.podspec', newspec)
       end
 
       # 压缩框架文件为 .zip 格式
@@ -165,23 +238,17 @@ module Pod
       end
 
       # 创建目标目录
-      def create_target_directory
-        target_dir = "#{@source_dir}/#{@spec.name}-#{@spec.version}"
-
+      def create_target_directory(spec)
+        target_dir = "#{@source_dir}/#{spec.name}-#{spec.version}"
         if File.exist? target_dir
-          if @force
-            Pathname.new(target_dir).rmtree
-          else
-            UI.puts "目标目录 '#{target_dir}' 已经存在。"
-            return nil
-          end
+          Pathname.new(target_dir).rmtree
         end
         target_dir
       end
 
       # 创建临时工作目录
-      def create_working_directory
-        target_dir = create_target_directory
+      def create_working_directory(spec)
+        target_dir = create_target_directory(spec)
         return if target_dir.nil?
 
         work_dir = Dir.tmpdir + '/cocoapods-' + Array.new(8) { rand(36).to_s(36) }.join
@@ -190,7 +257,7 @@ module Pod
       end
 
       # 执行构建操作
-      def perform_build(platform, static_sandbox, static_installer)
+      def perform_build(spec,platform, static_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
         builder = Pod::Builder.new(
           platform,
@@ -199,7 +266,7 @@ module Pod
           static_sandbox_root,
           nil,
           static_sandbox.public_headers.root,
-          @spec,
+          spec,
           @embedded,
           @mangle,
           false,
