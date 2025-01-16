@@ -163,8 +163,10 @@ module Pod
           frameworks = build_in_sandbox(spec, @spec_sources,platform)
           sim_framework = frameworks[0]
           framework = nil
+          target_directory = target_directory(spec.name, spec.version.to_s)
+          framework_library_file = "#{target_directory}/#{sim_framework}/#{spec.name}.framework/#{spec.name}"
 
-          framework_library_file = "#{sim_framework}/#{spec.name}.framework/#{spec.name}"
+          puts "framework_library_file: #{framework_library_file}"
 
           if sim_framework.nil? || framework_library_file.nil? || !File.exist?(framework_library_file)
             @failed_count += 1
@@ -234,9 +236,13 @@ module Pod
         return resources_spec, resource_bundles_spec
       end
 
+      def target_directory(name, version)
+        "#{@source_dir}/#{name}-#{version}"
+      end
+
       # 创建目标目录
       def create_target_directory(spec)
-        target_dir = "#{@source_dir}/#{spec.name}-#{spec.version}"
+        target_dir = target_directory(spec.name, spec.version.to_s)
         if File.exist? target_dir
           Pathname.new(target_dir).rmtree
         end
