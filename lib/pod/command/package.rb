@@ -33,6 +33,8 @@ module Pod
         @config = argv.option('configuration', 'Release')
         @all = argv.flag?('all', false)
         @source_dir = Dir.pwd
+        @succeed_count = 0
+        @failed_count = 0
 
         super
       end
@@ -83,17 +85,11 @@ module Pod
       private
 
       def start(specs)
-        specs.each do |spec|
+        specs.each_with_index do |spec, index|
           target_dir, work_dir = create_working_directory(spec)
-
           spec.attributes_hash['swift_version'] = '5.0'
-
           next if target_dir.nil?
-          if !flat_pods.include?(spec.name)
-            puts "跳过非白名单Pod: #{spec}"
-            next
-          end
-          puts "开始制作framework:#{spec}"
+          puts "开始制作第#{index + 1}个framework:#{spec}"
           Dir.chdir(work_dir)
           build_package(spec)
           `mv "#{work_dir}" "#{target_dir}"`
@@ -168,11 +164,17 @@ module Pod
           sim_framework = frameworks[0]
           framework = nil
 
-          puts "sim_framework: #{sim_framework}"
-          if sim_framework.nil?
-            puts  "framework 制作着失败: #{spec.name}"
+          framework_library_file = "#{sim_framework}/#{spec.name}.framework/#{spec.name}"
+
+          if sim_framework.nil? || framework_library_file.nil? || !File.exist?(framework_library_file)
+            @failed_count += 1
+            puts  "framework 生成失败: #{spec.name}，失败总数量: #{@failed_count}"
             next
           end
+
+          @@succeed_count += 1
+
+          puts  "framework 生成成功: #{spec.name}，成功总数量: #{@succeed_count}"
 
           newspec += builder.spec_platform(platform)
           tmp_framework = Dir.exist?(sim_framework) ? sim_framework : framework
@@ -180,7 +182,6 @@ module Pod
             resources_spec, resource_bundles_spec = generate_resources_and_bundles(tmp_framework)
             newspec += "  s.resources = #{resources_spec}\n"
             newspec += "  s.resource_bundles = #{resource_bundles_spec}\n"
-
             # 生成并压缩框架文件
             zip_framework(tmp_framework)
           end
