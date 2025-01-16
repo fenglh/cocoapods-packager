@@ -44,7 +44,12 @@ module Pod
       def run
 
         if @all
-          specs = find_all_specs()
+          all_specs = find_all_specs()
+
+          flat_pod_names = flat_pods()
+
+          specs = all_specs.select { | spec | flat_pod_names.include?(spec.name) }
+
           help! "无法找到有效的spec" unless !specs.empty?
           puts "准备执着framework个数:#{specs.count}"
           start(specs)
@@ -56,48 +61,35 @@ module Pod
 
       end
 
-      def pod_white_list
-        ['YLActivation',
-         'YLAnimation',
-         'YLAudit',
-         'YLBizJSBridge',
-         'YLCache',
-         'YLCloudConfig',
-         'YLConstellation',
-         'YLCore',
-         'YLEvent',
-         'YLGoldenEye',
-         'YLHyperosloCache',
-         'YLKaKaJSON',
-         'YLLeaksFinder',
-         'YLLog',
-         'YLMixPlayer',
-         'YLNetHook',
-         'YLNetwork',
-         'YLProtect',
-         'YLRaynet',
-         'YLReport',
-         'YLResource',
-         'YLRouter',
-         'YLSecurity',
-         'YLStatistic',
-         'YLStoreKit',
-         'YLSVGAPlayer',
-         'YLTiercel',
-         'YLUI',
-         'YLVIMediaCache',
-         'YLWeb',
-         'YYText',
-         'ZLPhotoBrowser']
+      def flat_pods
+        [
+          'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
+          'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
+          'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
+          'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
+          'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
+          'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
+          'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
+          'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
+          'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
+          'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
+          'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
+          'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
+          'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
+        ]
       end
+
 
       private
 
       def start(specs)
         specs.each do |spec|
           target_dir, work_dir = create_working_directory(spec)
+
+          spec.attributes_hash['swift_version'] = '5.0'
+
           next if target_dir.nil?
-          if !pod_white_list.include?(spec.name)
+          if !flat_pods.include?(spec.name)
             puts "跳过非白名单Pod: #{spec}"
             next
           end
@@ -171,10 +163,14 @@ module Pod
         spec.available_platforms.each do |platform|
           next unless platform.name.to_s == 'ios'
           puts "platform: #{platform.name}"
-          framework, sim_framework = build_in_sandbox(spec, @spec_sources,platform)
 
-          if framework.nil? || sim_framework.nil?
-            puts  "framework 执着失败: #{spec.name}"
+          frameworks = build_in_sandbox(spec, @spec_sources,platform)
+          sim_framework = frameworks[0]
+          framework = nil
+
+          puts "sim_framework: #{sim_framework}"
+          if sim_framework.nil?
+            puts  "framework 制作着失败: #{spec.name}"
             next
           end
 

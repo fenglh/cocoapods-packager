@@ -36,7 +36,9 @@ module Pod
     # 构建框架
     def build
       # 构建真机架构和模拟器架构
-      [build_framework(false), build_framework(true)]
+      # [build_framework(false), build_framework(true)]
+
+      [build_framework(true)]
     end
 
     # 构建Framework

@@ -29,6 +29,7 @@ module Pod
               config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
               config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
               config.build_settings['ENABLE_BITCODE'] = 'NO'
+              config.build_settings['SWIFT_VERSION'] = '5.0'
               config.build_settings['MACH_O_TYPE'] = 'staticlib'
               config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
             end
