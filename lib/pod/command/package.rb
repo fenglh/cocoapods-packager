@@ -163,18 +163,15 @@ module Pod
           frameworks = build_in_sandbox(spec, @spec_sources,platform)
           sim_framework = frameworks[0]
           framework = nil
-          target_directory = target_directory(spec.name, spec.version.to_s)
-          framework_library_file = "#{target_directory}/#{sim_framework}/#{spec.name}.framework/#{spec.name}"
+          framework_library_file = "./#{sim_framework}/#{spec.name}"
 
-          puts "framework_library_file: #{framework_library_file}"
-
-          if sim_framework.nil? || framework_library_file.nil? || !File.exist?(framework_library_file)
+          if !File.exist?(framework_library_file)
             @failed_count += 1
             puts  "framework 生成失败: #{spec.name}，失败总数量: #{@failed_count}"
             next
           end
 
-          @@succeed_count += 1
+          @succeed_count += 1
 
           puts  "framework 生成成功: #{spec.name}，成功总数量: #{@succeed_count}"
 
