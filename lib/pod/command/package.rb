@@ -137,7 +137,6 @@ module Pod
         temp_dir = Dir.mktmpdir
         config.installation_root = Pathname.new(temp_dir)
         config.sandbox_root = 'Pods'
-        puts "构建沙盒目录: #{temp_dir}"
         static_sandbox = make_sandbox()
         static_installer = install_pod(spec, spec_sources,platform.name, static_sandbox)
 

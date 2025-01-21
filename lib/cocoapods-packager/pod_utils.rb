@@ -11,7 +11,7 @@ module Pod
 
       def install_pod(spec, spec_sources, platform_name, sandbox)
 
-        puts "执行 pod install,"
+        puts "执行 pod install：#{sandbox.sources_root}"
 
         # 调用 podfile_from_spec 方法生成一个 Podfile 对象
         # 传入参数包括：spec 的定义文件路径、spec 名称、平台名称、部署目标、subspecs 和源
@@ -28,11 +28,8 @@ module Pod
         # 创建一个新的安装器（Installer）实例，传入 sandbox 和生成的 podfile
         static_installer = Installer.new(sandbox, podfile)
 
-
         # 调用安装器的 install! 方法开始安装 Pod
         static_installer.install!
-
-        puts "Podfile installed.  dir: #{sandbox}"
 
         # 如果安装器不为空，则进行后续配置
         unless static_installer.nil?
