@@ -53,7 +53,7 @@ module Pod
           specs = all_specs.select { | spec | flat_pod_names.include?(spec.name) }
 
           help! "无法找到有效的spec" unless !specs.empty?
-          puts "准备执着framework个数:#{specs.count}"
+          puts "准备制作framework个数:#{specs.count}"
           start(specs)
         else
           spec = spec_with_path(@name)
@@ -81,16 +81,22 @@ module Pod
         ]
       end
 
+      def flat_pods
+        [
+          'YLGoldenEye'
+        ]
+      end
 
       private
 
       def start(specs)
         specs.each_with_index do |spec, index|
           target_dir, work_dir = create_working_directory(spec)
-          spec.attributes_hash['swift_version'] = '5.0'
           next if target_dir.nil?
-          puts "开始制作第#{index + 1}个framework:#{spec}"
+
+          puts "开始制作第#{index + 1}个framework:#{spec}, swift version:#{spec.swift_version}"
           Dir.chdir(work_dir)
+
           build_package(spec)
           `mv "#{work_dir}" "#{target_dir}"`
           Dir.chdir(@source_dir)
@@ -131,6 +137,7 @@ module Pod
         temp_dir = Dir.mktmpdir
         config.installation_root = Pathname.new(temp_dir)
         config.sandbox_root = 'Pods'
+        puts "构建沙盒目录: #{temp_dir}"
         static_sandbox = make_sandbox()
         static_installer = install_pod(spec, spec_sources,platform.name, static_sandbox)
 
@@ -144,15 +151,14 @@ module Pod
 
       # 清理临时文件夹
       def clean_up_sandbox
-        Pathname.new(config.sandbox_root).rmtree
-        FileUtils.rm_f('Podfile.lock')
-        puts "已移除 Pods 和 Podfile.lock"
+        # Pathname.new(config.sandbox_root).rmtree
+        # FileUtils.rm_f('Podfile.lock')
+        # puts "已移除 Pods 和 Podfile.lock"
       end
 
       # 打包框架并生成新 podspec
       def build_package(spec)
 
-        puts "source: #{@source}"
         builder = SpecBuilder.new(spec, @source, @embedded, false)
         newspec = builder.spec_metadata
 
@@ -259,6 +265,8 @@ module Pod
       # 执行构建操作
       def perform_build(spec,platform, static_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
+
+        puts  "沙盒路径：#{static_sandbox_root}"
         builder = Pod::Builder.new(
           platform,
           static_installer,

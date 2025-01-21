@@ -8,63 +8,142 @@ module Pod
         Sandbox.new(static_sandbox_root)
       end
 
+
       def install_pod(spec, spec_sources, platform_name, sandbox)
 
+        puts "执行 pod install,"
+
+        # 调用 podfile_from_spec 方法生成一个 Podfile 对象
+        # 传入参数包括：spec 的定义文件路径、spec 名称、平台名称、部署目标、subspecs 和源
         podfile = podfile_from_spec(
           spec.defined_in_file,
           spec.name,
           platform_name,
+          spec.swift_version,
           spec.deployment_target(platform_name),
           nil,
           spec_sources
         )
 
+        # 创建一个新的安装器（Installer）实例，传入 sandbox 和生成的 podfile
         static_installer = Installer.new(sandbox, podfile)
+
+
+        # 调用安装器的 install! 方法开始安装 Pod
         static_installer.install!
 
+        puts "Podfile installed.  dir: #{sandbox}"
+
+        # 如果安装器不为空，则进行后续配置
         unless static_installer.nil?
+          # 遍历所有 Pod 项目的 targets
           static_installer.pods_project.targets.each do |target|
+
+            # 遍历每个 target 的构建配置
             target.build_configurations.each do |config|
+              # 配置构建设置
+
+              # 启用模块自动链接
               config.build_settings['CLANG_MODULES_AUTOLINK'] = 'YES'
+
+              # 禁用 GCC 的调试符号生成（对于发布版本可能有用）
               config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'NO'
+
+              # 禁用为分发构建库（对于静态库的构建通常会禁用）
               config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'NO'
+
+              # 禁用 Bitcode（如果不需要 Bitcode，可以关闭它）
               config.build_settings['ENABLE_BITCODE'] = 'NO'
-              config.build_settings['SWIFT_VERSION'] = '5.0'
+
+              # 设置生成的二进制文件类型为静态库
               config.build_settings['MACH_O_TYPE'] = 'staticlib'
+
+              # 设置 iOS 部署目标为 13.0
               config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+
+              # 设置 Swift 版本为 5.0
+              config.build_settings['SWIFT_VERSION'] = '5.0'
             end
           end
+
+          # 保存对 pods 项目的所有更改
           static_installer.pods_project.save
         end
 
+        # 返回安装器实例（可以用于后续的操作或调试）
         static_installer
       end
 
-      def podfile_from_spec(path, spec_name, platform_name, deployment_target, subspecs, sources, use_modular_headers = true)
+
+
+
+      def podfile_from_spec(path, spec_name, platform_name, swift_version, deployment_target, subspecs, sources, use_modular_headers = true)
+        # 创建一个空的 options 哈希，存储 podspec 相关的配置信息
         options = {}
+
+        # 如果传入了 podspec 的路径，添加到 options 中
         if path
           options[:podspec] = path
         end
 
-        puts "deployment_target: #{deployment_target}"
+        # 输出 Podfile 的 deployment_target 以供调试查看
+        puts "Podfile deployment_target: #{deployment_target}"
+
+        # 如果 subspecs 存在，添加到 options 中
         options[:subspecs] = subspecs if subspecs
+
+        # 创建一个新的 Podfile
         Pod::Podfile.new do
+
+          ENV['SWIFT_VERSION'] = swift_version.to_s
+          # 设置 Podfile 的源，遍历 sources 数组，为每个源调用 source 方法
           sources.each { |s| source s }
+
+          # 设置平台和部署目标（例如 iOS 10.0）
           platform(platform_name, deployment_target)
-          use_modular_headers!
+
+          # 根据传入参数决定是否使用 modular headers
+          use_modular_headers! if use_modular_headers
+
+          # 强制使用 frameworks 而非 static libraries
           use_frameworks!
+
+          # 支持特定版本范围的 Swift 版本
+          # 这里指定支持的 Swift 版本为 5.0 至 5.3
+          supports_swift_versions '>= 5.0', '<= 5.3'
+
+          current_target_definition.swift_version = swift_version
+
+          # 添加主 pod 依赖
+          # spec_name 是 pod 的名称，options 是配置项，包括 podspec 路径、subspec 等
           pod(spec_name, options)
 
-
+          # 安装时的额外配置项
           install!('cocoapods',
-                   :integrate_targets => false,
-                   :deterministic_uuids => false)
+                   :integrate_targets => false,  # 禁用 target 集成
+                   :deterministic_uuids => false)  # 禁用 deterministic UUIDs
 
+          # 定义一个名为 'packager' 的 target
+          puts "定义一个名为 'packager' 的 target"
           target('packager') do
+            # 继承完整的设置（包括所有配置）
+            puts "-----------------------------------------------------"
             inherit! :complete
+
           end
+          pre_install do |installer|
+            puts "pre_install: 配置 YLLeaksFinder 的 Swift 版本..."
+            swift_pod_targets = installer.pod_targets.select(&:uses_swift?)
+            # 遍历所有 pod 目标
+            swift_pod_targets.each do |pod_target|
+              puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
+            end
+          end
+
         end
       end
+
+
 
       def binary_only?(spec)
         deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
