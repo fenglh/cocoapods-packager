@@ -123,19 +123,21 @@ module Pod
                    :integrate_targets => false,  # 禁用 target 集成
                    :deterministic_uuids => false)  # 禁用 deterministic UUIDs
 
-          # 定义一个名为 'packager' 的 target
-          puts "定义一个名为 'packager' 的 target"
           target('packager') do
             # 继承完整的设置（包括所有配置）
-            puts "-----------------------------------------------------"
             inherit! :complete
-
           end
+
+          # 兼容个别pod 的podspec没有显式指定swift version
           pre_install do |installer|
-            puts "pre_install: 配置 YLLeaksFinder 的 Swift 版本..."
+            puts "pre_install: 兼容个别的podspec没有显式指定swift version"
             swift_pod_targets = installer.pod_targets.select(&:uses_swift?)
             # 遍历所有 pod 目标
             swift_pod_targets.each do |pod_target|
+              target_definitions = pod_target.target_definitions
+              target_definitions.each do |target_definition|
+                target_definition.swift_version = swift_version
+              end
               puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
             end
           end
