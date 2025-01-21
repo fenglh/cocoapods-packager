@@ -78,6 +78,9 @@ module Pod
 
 
       def podfile_from_spec(path, spec_name, platform_name, swift_version, deployment_target, subspecs, sources, use_modular_headers = true)
+
+
+
         # 创建一个空的 options 哈希，存储 podspec 相关的配置信息
         options = {}
 
@@ -95,7 +98,6 @@ module Pod
         # 创建一个新的 Podfile
         Pod::Podfile.new do
 
-          ENV['SWIFT_VERSION'] = swift_version.to_s
           # 设置 Podfile 的源，遍历 sources 数组，为每个源调用 source 方法
           sources.each { |s| source s }
 
@@ -107,12 +109,6 @@ module Pod
 
           # 强制使用 frameworks 而非 static libraries
           use_frameworks!
-
-          # 支持特定版本范围的 Swift 版本
-          # 这里指定支持的 Swift 版本为 5.0 至 5.3
-          supports_swift_versions '>= 5.0', '<= 5.3'
-
-          current_target_definition.swift_version = swift_version
 
           # 添加主 pod 依赖
           # spec_name 是 pod 的名称，options 是配置项，包括 podspec 路径、subspec 等
