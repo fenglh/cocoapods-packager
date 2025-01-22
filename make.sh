@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PASSWORD="Bml123456"
+PASSWORD="bml123456"
 echo $PASSWORD | sudo -S true  # 提前输入密码刷新缓存
 sudo gem uninstall cocoapods-packager
 gem build cocoapods-packager.gemspec

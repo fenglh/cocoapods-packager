@@ -12,14 +12,15 @@ module Pod
       def install_pod(spec, spec_sources, platform_name, sandbox)
 
         puts "执行 pod install：#{sandbox.sources_root}"
-
+        # swift 默认版本号5.0
+        swift_version = spec.swift_version.to_s.empty? ? "5.0" : spec.swift_version
         # 调用 podfile_from_spec 方法生成一个 Podfile 对象
         # 传入参数包括：spec 的定义文件路径、spec 名称、平台名称、部署目标、subspecs 和源
         podfile = podfile_from_spec(
           spec.defined_in_file,
           spec.name,
           platform_name,
-          spec.swift_version,
+          swift_version,
           spec.deployment_target(platform_name),
           nil,
           spec_sources
@@ -124,15 +125,16 @@ module Pod
 
           # 兼容个别pod 的podspec没有显式指定swift version
           pre_install do |installer|
-            puts "pre_install 处理"
+            puts "pre install 处理"
             swift_pod_targets = installer.pod_targets.select(&:uses_swift?)
             # 遍历所有 pod 目标
             swift_pod_targets.each do |pod_target|
               target_definitions = pod_target.target_definitions
               target_definitions.each do |target_definition|
                 target_definition.swift_version = swift_version
+                puts "pre install 设置#{pod_target.name} swift version:#{swift_version}"
               end
-              # puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
+              puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
             end
           end
 

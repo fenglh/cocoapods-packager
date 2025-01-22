@@ -54,7 +54,8 @@ module Pod
 
           specs = all_specs.select { | spec | flat_pod_names.include?(spec.name) }
 
-          help! "无法找到有效的spec" unless !specs.empty?
+          help! "准备制作framework个数:#{specs.count}" unless !specs.empty?
+
           puts "准备制作framework个数:#{specs.count}"
           start(specs)
         else
@@ -65,29 +66,29 @@ module Pod
 
       end
 
-      def flat_pods
-        [
-          'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
-          'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
-          'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
-          'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
-          'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
-          'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
-          'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
-          'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
-          'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
-          'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
-          'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
-          'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
-          'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
-        ]
-      end
-
       # def flat_pods
       #   [
-      #     'YLBizJSBridge'
+      #     'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
+      #     'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
+      #     'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
+      #     'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
+      #     'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
+      #     'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
+      #     'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
+      #     'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
+      #     'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
+      #     'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
+      #     'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
+      #     'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
+      #     'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
       #   ]
       # end
+
+      def flat_pods
+        [
+          'YLLeaksFinder'
+        ]
+      end
 
       private
 
@@ -113,6 +114,7 @@ module Pod
         lockfile = Pod::Config.instance.lockfile
         lockfile.pod_names.each do |pod_name|
           pod_version = lockfile.version(pod_name)
+          # puts "found spec: #{pod_name} (#{pod_version})"
           spec = find_spec_in_sources(sources, pod_name, pod_version)
           specs << spec if spec
         end
