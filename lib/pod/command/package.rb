@@ -29,7 +29,7 @@ module Pod
         @exclude_deps = argv.flag?('exclude-deps', true)
         @name = argv.shift_argument
         @source = argv.shift_argument
-        @spec_sources = argv.option('spec-sources', 'git@gitit.cc:social-infra/ios/cocoapods-repo.git,https://github.com/CocoaPods/Specs.git').split(',')
+        @spec_sources = argv.option('spec-sources', 'https://gitit.cc/social-infra/ios/cocoapods-repo.git,https://github.com/CocoaPods/Specs.git').split(',')
         @config = argv.option('configuration', 'Release')
         @all = argv.flag?('all', false)
         @source_dir = Dir.pwd
@@ -81,11 +81,11 @@ module Pod
         ]
       end
 
-      def flat_pods
-        [
-          'YLGoldenEye'
-        ]
-      end
+      # def flat_pods
+      #   [
+      #     'YLBizJSBridge'
+      #   ]
+      # end
 
       private
 
@@ -150,9 +150,9 @@ module Pod
 
       # 清理临时文件夹
       def clean_up_sandbox
-        # Pathname.new(config.sandbox_root).rmtree
-        # FileUtils.rm_f('Podfile.lock')
-        # puts "已移除 Pods 和 Podfile.lock"
+        Pathname.new(config.sandbox_root).rmtree
+        FileUtils.rm_f('Podfile.lock')
+        puts "已移除 Pods 和 Podfile.lock"
       end
 
       # 打包框架并生成新 podspec
@@ -163,7 +163,7 @@ module Pod
 
         spec.available_platforms.each do |platform|
           next unless platform.name.to_s == 'ios'
-          puts "platform: #{platform.name}"
+          puts "framework 平台: #{platform.name}"
 
           frameworks = build_in_sandbox(spec, @spec_sources,platform)
           sim_framework = frameworks[0]
@@ -264,8 +264,6 @@ module Pod
       # 执行构建操作
       def perform_build(spec,platform, static_sandbox, static_installer)
         static_sandbox_root = config.sandbox_root.to_s
-
-        puts  "沙盒路径：#{static_sandbox_root}"
         builder = Pod::Builder.new(
           platform,
           static_installer,

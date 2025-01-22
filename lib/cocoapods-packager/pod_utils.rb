@@ -28,6 +28,7 @@ module Pod
         # 创建一个新的安装器（Installer）实例，传入 sandbox 和生成的 podfile
         static_installer = Installer.new(sandbox, podfile)
 
+
         # 调用安装器的 install! 方法开始安装 Pod
         static_installer.install!
 
@@ -123,7 +124,7 @@ module Pod
 
           # 兼容个别pod 的podspec没有显式指定swift version
           pre_install do |installer|
-            puts "pre_install: 兼容个别的podspec没有显式指定swift version"
+            puts "pre_install 处理"
             swift_pod_targets = installer.pod_targets.select(&:uses_swift?)
             # 遍历所有 pod 目标
             swift_pod_targets.each do |pod_target|
@@ -131,7 +132,7 @@ module Pod
               target_definitions.each do |target_definition|
                 target_definition.swift_version = swift_version
               end
-              puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
+              # puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
             end
           end
 
