@@ -45,6 +45,8 @@ module Pod
 
       def run
 
+        puts "cocoapods repo sources: #{@spec_sources}"
+
         if @all
           all_specs = find_all_specs()
 
@@ -57,7 +59,7 @@ module Pod
           start(specs)
         else
           spec = spec_with_path(@name)
-          help! "无法找到名为 `#{@name}` 的 podspec。" unless spec
+          help! "无法找到`#{@name}` 的 podspec。" unless spec
           start([spec])
         end
 
