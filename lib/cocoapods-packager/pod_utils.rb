@@ -60,8 +60,6 @@ module Pod
               # 设置 iOS 部署目标为 13.0
               config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
 
-              # 设置 Swift 版本为 5.0
-              config.build_settings['SWIFT_VERSION'] = '5.0'
             end
           end
 
@@ -132,7 +130,7 @@ module Pod
               target_definitions = pod_target.target_definitions
               target_definitions.each do |target_definition|
                 target_definition.swift_version = swift_version
-                puts "pre install 设置#{pod_target.name} swift version:#{swift_version}"
+                # puts "pre install 设置#{pod_target.name} swift version:#{swift_version}"
               end
               puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
             end
