@@ -132,7 +132,7 @@ module Pod
                 target_definition.swift_version = swift_version
                 # puts "pre install 设置#{pod_target.name} swift version:#{swift_version}"
               end
-              puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
+              # puts "#{pod_target.target_definitions.map { |td| "target:`#{td.name}`(swift version:`#{td.swift_version.to_s}`)" }.to_sentence}集成Pod`#{pod_target.name}`(swift_version: `#{swift_version}`)"
             end
           end
 

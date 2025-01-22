@@ -106,6 +106,7 @@ module Pod
           target_dir, work_dir = create_working_directory(spec)
           next if target_dir.nil?
 
+          puts "=======================Start========================="
           puts "开始制作第#{index + 1}个framework:#{spec}, swift version:#{spec.swift_version}"
           Dir.chdir(work_dir)
 
