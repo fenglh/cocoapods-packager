@@ -66,38 +66,38 @@ module Pod
 
       end
 
-      # def flat_pods
-      #   [
-      #     'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
-      #     'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
-      #     'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
-      #     'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
-      #     'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
-      #     'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
-      #     'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
-      #     'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
-      #     'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
-      #     'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
-      #     'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
-      #     'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
-      #     'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
-      #   ]
-      # end
-
       def flat_pods
-          [
-            'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
-            'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
-            'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
-            'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
-            'TCUIKit', 'TCUtil', 'YLConfig', 'YLDNS', 'YLDokit', 'YLGame', 'YLLaunchView', 'YLLive', 'YLLog', 'YLLogUploader',
-            'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
-            'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
-            'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
-            'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
-            'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
-          ]
+        [
+          'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
+          'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
+          'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
+          'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
+          'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
+          'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
+          'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
+          'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
+          'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
+          'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
+          'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
+          'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
+          'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
+        ]
       end
+
+      # def flat_pods
+      #     [
+      #       'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
+      #       'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
+      #       'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
+      #       'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
+      #       'TCUIKit', 'TCUtil', 'YLConfig', 'YLDNS', 'YLDokit', 'YLGame', 'YLLaunchView', 'YLLive', 'YLLog', 'YLLogUploader',
+      #       'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
+      #       'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
+      #       'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
+      #       'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
+      #       'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
+      #     ]
+      # end
 
       private
 

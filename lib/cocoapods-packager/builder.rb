@@ -38,7 +38,7 @@ module Pod
       # 构建真机架构和模拟器架构
       # [build_framework(false), build_framework(true)]
 
-      [build_framework(true)]
+      [build_framework(false)]
     end
 
     # 构建Framework
@@ -92,9 +92,6 @@ module Pod
         'ENABLE_BITCODE=NO',
         'GCC_PREPROCESSOR_DEFINITIONS=\'$(inherited)\''
       ]
-
-
-
 
       args << 'BUILD_LIBRARY_FOR_DISTRIBUTION=YES' if @distribution
       args << 'CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO' if defined?(Pod::DONT_CODESIGN)
