@@ -44,7 +44,7 @@ module Pod
       platform_attributes_hash = @podspec_path.attributes_hash[platform.name.to_s] || {}
       platform_vendored_frameworks = Array(platform_attributes_hash['vendored_frameworks'])
 
-      spec_framework = "#{@podspec_path.name}.framework.zip"
+      spec_framework = "#{@podspec_path.name}.framework"
       platform_vendored_frameworks << spec_framework unless platform_vendored_frameworks.include?(spec_framework)
 
       platform_vendored_libraries = Array(platform_attributes_hash['vendored_libraries'])
