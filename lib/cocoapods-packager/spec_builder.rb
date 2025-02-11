@@ -39,12 +39,16 @@ module Pod
 
     private
 
-    def platform_spec(platform, executable_name, has_one_platform)
+    def platform_spec(platform, has_one_platform)
       ordered_keys = %w[platform source_files header_mappings_dir module_map vendored_frameworks vendored_libraries]
       platform_attributes_hash = @podspec_path.attributes_hash[platform.name.to_s] || {}
       platform_vendored_frameworks = Array(platform_attributes_hash['vendored_frameworks'])
+
+      spec_framework = "#{@podspec_path.name}.framework.zip"
+      platform_vendored_frameworks << spec_framework unless platform_vendored_frameworks.include?(spec_framework)
+
       platform_vendored_libraries = Array(platform_attributes_hash['vendored_libraries'])
-      hash = platform_spec_hash(platform.name, executable_name, platform_vendored_frameworks, platform_vendored_libraries)
+      hash = platform_spec_hash( platform_vendored_frameworks, platform_vendored_libraries)
       platform_prefix = "#{platform.name}."
       platform_section = []
       unless has_one_platform
@@ -56,7 +60,7 @@ module Pod
       platform_section
     end
 
-    def platform_spec_hash(platform_name, product_name, vendored_frameworks, vendored_libraries)
+    def platform_spec_hash(vendored_frameworks, vendored_libraries)
       platform_hash = {}
       platform_hash['vendored_frameworks'] ||= []
       platform_hash['vendored_frameworks'] += vendored_frameworks
@@ -71,7 +75,7 @@ module Pod
         platform = @platform  # 直接使用@platform
         ret << [spec_line('platform', platform_spec_line(platform))]
       end
-      ret.push(platform_spec(@platform, nil, has_one_platform))
+      ret.push(platform_spec(@platform, has_one_platform))
       ret
     end
 
@@ -110,7 +114,7 @@ module Pod
       formatted_str += resource_bundles.map do |bundle_name, files|
         "  '#{bundle_name}' => #{files.inspect}"  # .inspect 生成 Ruby 数组格式
       end.join(",\n")
-      formatted_str += "\n}"
+      formatted_str += "\n  }"
       [formatted_str]
     end
 

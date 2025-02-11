@@ -183,15 +183,14 @@ module Pod
           end
 
           @succeed_count += 1
-
-          puts  "framework 生成成功: #{spec.name}，成功总数量: #{@succeed_count}"
-
-          # newspec += builder.spec_platform(platform)
           tmp_framework = Dir.exist?(sim_framework) ? sim_framework : framework
+
+          puts  "生成 framework 成功: #{tmp_framework}，成功总数量: #{@succeed_count}"
+
           unless tmp_framework.nil?
             # 生成并压缩框架文件
             zip_framework(tmp_framework)
-            generate_framework_podspec(spec, @source_dir, tmp_framework, platform)
+            generate_framework_podspec(spec, Dir.pwd, tmp_framework, platform)
           end
         end
 
@@ -221,7 +220,6 @@ module Pod
           # 设置文件路径
           spec.instance_variable_set(:@defined_in_file, Pathname.new(binary_spec_path))
 
-          puts "Podspec 生成成功: #{binary_spec_path}"
           spec
 
         rescue => e
