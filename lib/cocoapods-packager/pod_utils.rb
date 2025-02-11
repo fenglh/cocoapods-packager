@@ -76,8 +76,6 @@ module Pod
 
       def podfile_from_spec(path, spec_name, platform_name, swift_version, deployment_target, subspecs, sources, use_modular_headers = true)
 
-
-
         # 创建一个空的 options 哈希，存储 podspec 相关的配置信息
         options = {}
 
@@ -139,29 +137,29 @@ module Pod
         end
       end
 
+      #
+      #
+      # def binary_only?(spec)
+      #   deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
+      #   [spec, *deps].each do |specification|
+      #     %w(vendored_frameworks vendored_libraries).each do |attrib|
+      #       if specification.attributes_hash[attrib]
+      #         return true
+      #       end
+      #     end
+      #   end
+      #
+      #   false
+      # end
 
-
-      def binary_only?(spec)
-        deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
-        [spec, *deps].each do |specification|
-          %w(vendored_frameworks vendored_libraries).each do |attrib|
-            if specification.attributes_hash[attrib]
-              return true
-            end
-          end
-        end
-
-        false
-      end
-
-      def spec_with_name(name)
-        return if name.nil?
-
-        set = Pod::Config.instance.sources_manager.search(Dependency.new(name))
-        return nil if set.nil?
-
-        set.specification.root
-      end
+      # def spec_with_name(name)
+      #   return if name.nil?
+      #
+      #   set = Pod::Config.instance.sources_manager.search(Dependency.new(name))
+      #   return nil if set.nil?
+      #
+      #   set.specification.root
+      # end
 
       # 定义一个方法，用于从给定路径加载一个 Podspec 文件
       def spec_with_path(path)

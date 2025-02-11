@@ -6,13 +6,13 @@ module Pod
                        vendored_libraries resource_bundles resources preserve_paths cocoapods_version swift_versions].freeze
     PLATFORM_ATTRIBUTES = %w[frameworks libraries requires_arc xcconfig pod_target_xcconfig user_target_xcconfig].freeze
 
-    attr_reader :podspec_path, :platforms, :artifact_repo_url, :framework_path, :resources_path
+    attr_reader :podspec_path, :platform, :artifact_repo_url, :framework_path, :resources_path
 
-    def initialize(source_podspec, artifact_repo_url, framework_path)
+    def initialize(source_podspec, artifact_repo_url, framework_path, platform)
       @podspec_path = source_podspec
       @artifact_repo_url = artifact_repo_url
       @framework_path = framework_path
-      @platforms = []
+      @platform = platform
       @resources_path = Pathname.new(framework_path) + 'Resources'
     end
 
@@ -21,9 +21,10 @@ module Pod
       sections = [root_attributes]
       sections << dependency_section
       sections << framework_section
+      sections << library_section
       sections << resources_section
       sections << resource_bundles_section
-      sections.push(*platforms_sections)
+      sections.push(*platform_sections)
 
       sections_str = sections.reject(&:empty?).map do |section|
         section.map { |lines| lines + "\n" }.join('')
@@ -35,9 +36,6 @@ module Pod
       Pod::Specification.from_string(generate_ruby_string, "#{@podspec_path.name}.podspec")
     end
 
-    def add_platform(platform, executable_name)
-      @platforms << [platform, executable_name]
-    end
 
     private
 
@@ -66,24 +64,24 @@ module Pod
       platform_hash
     end
 
-    def platforms_sections
+    def platform_sections
       ret = []
-      has_one_platform = (@platforms.size == 1)
+      has_one_platform = @platform.nil? ? false : true  # 如果@platform为空，认为没有平台
       if has_one_platform
-        platform, = @platforms.first
+        platform = @platform  # 直接使用@platform
         ret << [spec_line('platform', platform_spec_line(platform))]
       end
-      ret.push(*@platforms.map { |p, e| platform_spec(p, e, has_one_platform) })
+      ret.push(platform_spec(@platform, nil, has_one_platform))
       ret
     end
 
+
     require 'set'
-    def framework_section(platform = nil)
-      platform ||= Platform.new(:ios)  # 默认值为 :ios，如果没有传递 platform 参数，才会创建新对象
-      frameworks = Set.new(@podspec_path.consumer(platform).frameworks || [])
+    def framework_section()
+      frameworks = Set.new(@podspec_path.consumer(@platform).frameworks || [])
       # 遍历 subspecs 并将框架添加到 frameworks 中
       @podspec_path.subspecs.each do |subspec|
-        frameworks.merge(subspec.consumer(platform).frameworks || [])
+        frameworks.merge(subspec.consumer(@platform).frameworks || [])
       end
       # 转换为数组（如果需要返回一个数组而非 Set）并打印框架
       frameworks_array = frameworks.to_a
@@ -134,12 +132,12 @@ module Pod
 
 
 
-    def library_section(platform = nil)
-      platform ||= Platform.new(:ios)  # 默认值为 :ios，如果没有传递 platform 参数，才会创建新对象
-      libraries = Set.new(@podspec_path.consumer(platform).libraries || [])
+    def library_section()
+
+      libraries = Set.new(@podspec_path.consumer(@platform).libraries || [])
       # 遍历 subspecs 并将框架添加到 frameworks 中
       @podspec_path.subspecs.each do |subspec|
-        libraries.merge(subspec.consumer(platform).libraries || [])
+        libraries.merge(subspec.consumer(@platform).libraries || [])
       end
       # 转换为数组（如果需要返回一个数组而非 Set）并打印框架
       libraries_array = libraries.to_a
@@ -151,8 +149,7 @@ module Pod
 
     def dependency_section
       dependencies = []
-      platform ||= Platform.new(:ios)  # 默认值为 :ios，如果没有
-      all_dependencies(platform).each do |dependency|
+      all_dependencies(@platform).each do |dependency|
         puts "dependency: #{dependency.name}"
         dependencies << dependency_line(dependency)
       end
@@ -175,9 +172,6 @@ module Pod
       # 返回去重后的依赖列表
       all_deps.to_a
     end
-
-
-
 
 
     def platform_spec_line(platform)

@@ -88,7 +88,7 @@ module Pod
 
       def flat_pods
           [
-            'YLWeb'
+            'YLLeaksFinder'
           ]
       end
 
@@ -146,7 +146,6 @@ module Pod
         config.sandbox_root = 'Pods'
         static_sandbox = make_sandbox()
         static_installer = install_pod(spec, spec_sources,platform.name, static_sandbox)
-
         begin
           frameworks = perform_build(spec, platform, static_sandbox, static_installer)
           return frameworks
@@ -204,11 +203,8 @@ module Pod
         begin
           # 初始化 SpecGenerator
           puts "SpecGenerator 初始化 podspec: #{source_podspec}, artifact_repo_url: #{@artifact_repo_url}, framework_path: #{framework_path}"
-          spec_generator = Pod::SpecBuilder.new(source_podspec, @artifact_repo_url, framework_path)
+          spec_generator = Pod::SpecBuilder.new(source_podspec, @artifact_repo_url, framework_path, platform)
           puts "SpecGenerator 初始化成功"
-
-          # 添加平台信息
-          spec_generator.add_platform(platform, "xxxxxxxxxxxxxx")
 
           # 生成 spec
           spec = spec_generator.generate
