@@ -220,6 +220,8 @@ module Pod
 
     def dependency_line(dependency)
       name = dependency.name
+      # 不支持subspec ，因此去掉/后面的字符串。例如：“YLReport/AppReport” 变成“YLReport”
+      name = name.split('/').first
       reqstr = dependency.requirement.as_list.map { |s| value_of(s) }.join(', ')
       ['  ', 's.dependency ', value_of(name), ', ', reqstr].join('')
     end
