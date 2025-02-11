@@ -32,10 +32,6 @@ module Pod
         @spec_sources = argv.option('spec-sources', 'https://gitit.cc/social-infra/ios/cocoapods-repo.git,https://github.com/CocoaPods/Specs.git').split(',')
         @config = argv.option('configuration', 'Release')
         @all = argv.flag?('all', false)
-        @source_dir = Dir.pwd
-        @succeed_count = 0
-        @failed_count = 0
-
         super
       end
 
@@ -44,6 +40,12 @@ module Pod
       end
 
       def run
+
+        @source_dir = Dir.pwd
+        @succeed_count = 0
+        @failed_count = 0
+        @artifact_repo_url = "http://192.168.5.173:8080/frameworks"
+        @use_json = false
 
         puts "cocoapods repo sources: #{@spec_sources}"
 
@@ -66,38 +68,29 @@ module Pod
 
       end
 
-      def flat_pods
-        [
-          'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
-          'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
-          'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
-          'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
-          'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
-          'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
-          'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
-          'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
-          'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
-          'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
-          'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
-          'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
-          'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
-        ]
-      end
-
       # def flat_pods
-      #     [
-      #       'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
-      #       'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
-      #       'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
-      #       'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
-      #       'TCUIKit', 'TCUtil', 'YLConfig', 'YLDNS', 'YLDokit', 'YLGame', 'YLLaunchView', 'YLLive', 'YLLog', 'YLLogUploader',
-      #       'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
-      #       'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
-      #       'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
-      #       'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
-      #       'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
-      #     ]
+      #   [
+      #     'BSText', 'CrushGuard', 'FLLaunchView', 'FlatAnimation', 'FlatBase',
+      #     'FlatBiz', 'FlatDNS', 'FlatDokit', 'FlatGame', 'FlatKtv', 'FlatLive',
+      #     'FlatLogin', 'FlatPageView', 'FlatReport', 'FlatResource', 'FlatSecurity',
+      #     'FlatTouchRipple', 'FlatWeb', 'PerformanceReport', 'TCCommon', 'TCFoundation',
+      #     'TCUIKit', 'TCUtil', 'YLActivation', 'YLAnimation', 'YLAudit', 'YLBizJSBridge',
+      #     'YLCache', 'YLCloudConfig', 'YLConfig', 'YLConfigLangs', 'YLConstellation',
+      #     'YLCore', 'YLDNS', 'YLDokit', 'YLEvent', 'YLGame', 'YLGoldenEye', 'YLHyperosloCache',
+      #     'YLKaKaJSON', 'YLLaunchView', 'YLLeaksFinder', 'YLLive', 'YLLog', 'YLLogUploader',
+      #     'YLLogin', 'YLMixLog', 'YLMixPlayer', 'YLNetHook', 'YLNetwork', 'YLPageView',
+      #     'YLPayment', 'YLPerformanceReport', 'YLProtect', 'YLPullPush', 'YLRaynet',
+      #     'YLReport', 'YLResource', 'YLRouter', 'YLSVGAPlayer', 'YLSecurity', 'YLStatistic',
+      #     'YLStoreKit', 'YLSwan', 'YLTiercel', 'YLTouchRipple', 'YLUI', 'YLUpgrade',
+      #     'YLVIMediaCache', 'YLWeb', 'YLWebSocket', 'YLWorkQueue'
+      #   ]
       # end
+
+      def flat_pods
+          [
+            'YLWeb'
+          ]
+      end
 
       private
 
@@ -164,16 +157,16 @@ module Pod
 
       # 清理临时文件夹
       def clean_up_sandbox
-        Pathname.new(config.sandbox_root).rmtree
-        FileUtils.rm_f('Podfile.lock')
-        puts "已移除 Pods 和 Podfile.lock"
+        # Pathname.new(config.sandbox_root).rmtree
+        # FileUtils.rm_f('Podfile.lock')
+        # puts "已移除 Pods 和 Podfile.lock"
       end
 
       # 打包框架并生成新 podspec
       def build_package(spec)
 
-        builder = SpecBuilder.new(spec, @source, @embedded, false)
-        newspec = builder.spec_metadata
+        # builder = SpecBuilder.new(spec, @source, @embedded, false)
+        # newspec = builder.spec_metadata
 
         spec.available_platforms.each do |platform|
           next unless platform.name.to_s == 'ios'
@@ -194,29 +187,64 @@ module Pod
 
           puts  "framework 生成成功: #{spec.name}，成功总数量: #{@succeed_count}"
 
-          newspec += builder.spec_platform(platform)
+          # newspec += builder.spec_platform(platform)
           tmp_framework = Dir.exist?(sim_framework) ? sim_framework : framework
           unless tmp_framework.nil?
-            resources_spec, resource_bundles_spec = generate_resources_and_bundles(tmp_framework)
-            newspec += "  s.resources = #{resources_spec}\n"
-            newspec += "  s.resource_bundles = #{resource_bundles_spec}\n"
             # 生成并压缩框架文件
             zip_framework(tmp_framework)
+            generate_framework_podspec(spec, @source_dir, tmp_framework, platform)
           end
         end
 
-        newspec += builder.spec_close
-        File.write(spec.name + '.podspec', newspec)
       end
+
+      def generate_framework_podspec(source_podspec, stage_dir, framework_path, platform)
+        name = source_podspec.name
+
+        begin
+          # 初始化 SpecGenerator
+          puts "SpecGenerator 初始化 podspec: #{source_podspec}, artifact_repo_url: #{@artifact_repo_url}, framework_path: #{framework_path}"
+          spec_generator = Pod::SpecBuilder.new(source_podspec, @artifact_repo_url, framework_path)
+          puts "SpecGenerator 初始化成功"
+
+          # 添加平台信息
+          spec_generator.add_platform(platform, "xxxxxxxxxxxxxx")
+
+          # 生成 spec
+          spec = spec_generator.generate
+
+          # 根据配置保存为 JSON 或 Ruby 文件
+          if @use_json
+            binary_spec_path = File.join(stage_dir, name + '.podspec.json')
+            File.open(binary_spec_path, 'w') { |file| file.write(spec.to_pretty_json) }
+          else
+            binary_spec_path = File.join(stage_dir, name + '.podspec')
+            File.open(binary_spec_path, 'w') { |file| file.write(spec_generator.generate_ruby_string) }
+          end
+
+          # 设置文件路径
+          spec.instance_variable_set(:@defined_in_file, Pathname.new(binary_spec_path))
+
+          puts "Podspec 生成成功: #{binary_spec_path}"
+          spec
+
+        rescue => e
+          # 捕获异常并记录错误信息
+          STDERR.puts "生成 Framework Podspec 失败: #{e.message}"
+          STDERR.puts e.backtrace.join("\n")
+
+          # 根据需求，选择是返回 nil，重新抛出异常，还是其他处理方式
+          nil
+        end
+      end
+
 
       # 压缩框架文件为 .zip 格式
       def zip_framework(framework_path)
         parent_path = File.dirname(framework_path)
         framework_name = File.basename(framework_path)
         zipfile_name = "#{framework_name}.zip"
-
         `cd #{parent_path} && zip -r #{zipfile_name} #{framework_name}`
-
         if $?.success?
           puts "成功创建了 #{zipfile_name}"
         else
