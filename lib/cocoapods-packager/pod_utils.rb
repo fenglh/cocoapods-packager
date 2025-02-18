@@ -11,7 +11,6 @@ module Pod
 
       def install_pod(spec, spec_sources, platform_name, sandbox)
 
-        puts "执行 pod install：#{sandbox.sources_root}"
         # swift 默认版本号5.0
         swift_version = spec.swift_version.to_s.empty? ? "5.0" : spec.swift_version
         # 调用 podfile_from_spec 方法生成一个 Podfile 对象
@@ -26,10 +25,12 @@ module Pod
           spec_sources
         )
 
+        puts "Podfile: #{podfile.to_yaml}"
+
         # 创建一个新的安装器（Installer）实例，传入 sandbox 和生成的 podfile
         static_installer = Installer.new(sandbox, podfile)
 
-
+        puts "执行 pod install：#{sandbox.sources_root}"
         # 调用安装器的 install! 方法开始安装 Pod
         static_installer.install!
 
@@ -80,8 +81,11 @@ module Pod
         options = {}
 
         # 如果传入了 podspec 的路径，添加到 options 中
-        if path
-          options[:podspec] = path
+        # 判断 `path` 是否是本地路径
+        if path && File.exist?(path)
+          options[:path] = File.dirname(path)  # CocoaPods 需要 podspec 所在目录，而不是 podspec 文件本身
+        else
+          options[:podspec] = path  # 远程 podspec 时使用
         end
 
         # 输出 Podfile 的 deployment_target 以供调试查看
@@ -104,6 +108,7 @@ module Pod
 
           # 强制使用 frameworks 而非 static libraries
           use_frameworks!
+
 
           # 添加主 pod 依赖
           # spec_name 是 pod 的名称，options 是配置项，包括 podspec 路径、subspec 等
@@ -138,28 +143,7 @@ module Pod
       end
 
       #
-      #
-      # def binary_only?(spec)
-      #   deps = spec.dependencies.map { |dep| spec_with_name(dep.name) }
-      #   [spec, *deps].each do |specification|
-      #     %w(vendored_frameworks vendored_libraries).each do |attrib|
-      #       if specification.attributes_hash[attrib]
-      #         return true
-      #       end
-      #     end
-      #   end
-      #
-      #   false
-      # end
 
-      # def spec_with_name(name)
-      #   return if name.nil?
-      #
-      #   set = Pod::Config.instance.sources_manager.search(Dependency.new(name))
-      #   return nil if set.nil?
-      #
-      #   set.specification.root
-      # end
 
       # 定义一个方法，用于从给定路径加载一个 Podspec 文件
       def spec_with_path(path)
