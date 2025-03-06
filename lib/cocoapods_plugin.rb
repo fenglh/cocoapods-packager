@@ -1,4 +1,4 @@
-require 'pod/command/package'
+require 'pod/command/pack'
 require 'cocoapods-pack/user_interface/build_failed_report'
 require 'cocoapods-pack/builder'
 require 'cocoapods-pack/framework'

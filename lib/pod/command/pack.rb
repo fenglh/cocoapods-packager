@@ -1,9 +1,10 @@
 require 'tmpdir'
 
+require_relative '../../cocoapods-packager/pod_utils'
 module Pod
   class Command
-    class Package < Command
-      self.summary = '将 podspec 打包为静态库。'
+    class Pack < Command
+      self.summary = '将podspec打包为静态库framework。'
       self.arguments = [
         CLAide::Argument.new('NAME', true),
         CLAide::Argument.new('SOURCE', false)

@@ -1,6 +1,6 @@
 module Pod
   class Command
-    class Package < Command
+    class Pack < Command
       private
 
       def make_sandbox()
