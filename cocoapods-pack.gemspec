@@ -1,14 +1,14 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'cocoapods_packager.rb'
+require 'cocoapods_pack.rb'
 
 Gem::Specification.new do |spec|
-  spec.name = 'cocoapods-packager'
+  spec.name = 'cocoapods-pack'
   spec.version = Pod::Packager::VERSION
   spec.authors = ['fenglh']
   spec.summary = 'CocoaPods plugin which allows you to generate a framework or static library from a podspec.'
-  spec.homepage = 'https://github.com/CocoaPods/cocoapods-packager'
+  spec.homepage = 'https://github.com/CocoaPods/cocoapods-pack'
   spec.license = 'MIT'
   spec.files = `git ls-files`.split($/).reject { |file| file =~ /\.gem$/ }
   spec.executables = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }

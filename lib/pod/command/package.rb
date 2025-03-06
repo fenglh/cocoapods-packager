@@ -155,9 +155,9 @@ module Pod
 
       # 清理临时文件夹
       def clean_up_sandbox
-        Pathname.new(config.sandbox_root).rmtree
-        FileUtils.rm_f('Podfile.lock')
-        puts "已移除 Pods 和 Podfile.lock"
+        # Pathname.new(config.sandbox_root).rmtree
+        # FileUtils.rm_f('Podfile.lock')
+        # puts "已移除 Pods 和 Podfile.lock"
       end
 
       # 打包框架并生成新 podspec

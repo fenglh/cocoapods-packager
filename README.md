@@ -26,7 +26,7 @@ $ gem install cocoapods-packager
 or add a line to your Gemfile:
 
 ```ruby
-gem "cocoapods-packager"
+gem "cocoapods-pack"
 ```
 
 then run `bundle install`.
