@@ -1,6 +1,9 @@
 require 'tmpdir'
 
 require_relative '../../cocoapods-packager/pod_utils'
+require_relative '../../cocoapods-packager/builder'
+require_relative '../../cocoapods-packager/spec_builder'
+
 module Pod
   class Command
     class Pack < Command
