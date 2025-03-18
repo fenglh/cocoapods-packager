@@ -21,6 +21,7 @@ module Pod
           ['--exclude-deps', '排除依赖的符号。'],
           ['--configuration', '构建指定的配置（例如 Debug）。默认为 Release。'],
           ['--subspecs', '仅包含指定的子规格。'],
+          ['--output', 'framework输出目录'],
           ['--spec-sources=private,https://github.com/CocoaPods/Specs.git', '从指定的源拉取依赖的 Pod（默认为 https://github.com/CocoaPods/Specs.git）']
         ]
       end
@@ -28,6 +29,7 @@ module Pod
       def initialize(argv)
         # 初始化实例变量
         @embedded = argv.flag?('embedded')
+        @output = argv.option('output')
         @distribution = argv.flag?('distribution', false)
         @mangle = argv.flag?('mangle', true)
         @exclude_deps = argv.flag?('exclude-deps', true)
@@ -185,12 +187,15 @@ module Pod
           @succeed_count += 1
           tmp_framework = Dir.exist?(sim_framework) ? sim_framework : framework
 
-          puts  "生成 framework 成功: #{tmp_framework}，成功总数量: #{@succeed_count}"
-
+          puts  "Framework: #{tmp_framework}"
           unless tmp_framework.nil?
+            copy_framework_to_output(tmp_framework, @output)
+            # 删除临时产物
+            delete_framework(tmp_framework)
+            puts  "==Pod pack Succeed=="
             # 生成并压缩框架文件
-            zip_framework(tmp_framework)
-            generate_framework_podspec(spec, Dir.pwd, tmp_framework, platform)
+            # zip_framework(tmp_framework)
+            # generate_framework_podspec(spec, Dir.pwd, tmp_framework, platform)
           end
         end
 
@@ -232,7 +237,50 @@ module Pod
         end
       end
 
+      def delete_framework(framework_path)
+        # 检查传入的framework路径是否存在
+        unless File.exist?(framework_path)
+          raise "Framework not found at #{framework_path}"
+        end
 
+        # 删除framework目录
+        begin
+          FileUtils.rm_rf(framework_path)
+          puts "Successfully deleted #{framework_path}"
+        rescue StandardError => e
+          puts "Error deleting framework: #{e.message}"
+        end
+      end
+
+      def copy_framework_to_output(framework_path, output_path)
+        # 检查传入的framework路径是否存在并且是一个目录
+        unless File.exist?(framework_path) && File.directory?(framework_path)
+          raise "Framework directory not found at #{framework_path}"
+        end
+
+        # 创建输出路径（如果不存在的话）
+        FileUtils.mkdir_p(output_path)
+
+        # 获取框架目录的名称（xxx.framework）
+        framework_name = File.basename(framework_path)
+
+        # 构建目标路径，目标路径是output_path + framework_name
+        target_path = File.join(output_path, framework_name)
+
+        # 判断目标路径是否已经存在，如果存在则强制覆盖
+        if File.exist?(target_path)
+          puts "Target path #{target_path} already exists. It will be overwritten."
+          FileUtils.rm_rf(target_path) # 删除已存在的目标目录
+        end
+
+        # 强制拷贝框架目录到目标路径
+        begin
+          FileUtils.cp_r(framework_path, target_path)
+          puts "-：Successfully copied #{framework_path} to #{target_path}"
+        rescue StandardError => e
+          puts "Error copying framework: #{e.message}"
+        end
+      end
       # 压缩框架文件为 .zip 格式
       def zip_framework(framework_path)
         parent_path = File.dirname(framework_path)
